@@ -3,3 +3,4 @@
 .venv/
 myenv/
 .env
+manual_db/chroma.sqlite3

@@ -2,6 +2,7 @@ import chromadb
 from chromadb.utils import embedding_functions
 import os
 from dotenv import load_dotenv
+from openai import OpenAI
 
 load_dotenv()
 openai_api_key = os.getenv("API_KEY")
@@ -9,16 +10,19 @@ openai_api_key = os.getenv("API_KEY")
 if not openai_api_key:
     raise ValueError("APIキーがありません。.envを確認してください。")
 
-# 永続化ディレクトリを完全一致で指定
-persist_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "manual_db"))
-print(f"✅ 確認で使用するデータ保存先: {persist_directory}")
+# OpenAIクライアント作成（最新版対応）
+openai_client = OpenAI(api_key=openai_api_key)
 
-# PersistentClientを使用して読み込み
+# 永続化データの場所を指定
+persist_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "manual_db"))
+print(f"✅ 確認用データ保存先: {persist_directory}")
+
+# ChromaDBクライアント作成（0.4.24利用時）
 client = chromadb.PersistentClient(path=persist_directory)
 
-# OpenAIの埋め込み関数を再設定
+# 新OpenAIクライアントを利用した埋め込み関数を再設定
 openai_ef = embedding_functions.OpenAIEmbeddingFunction(
-    api_key=openai_api_key,
+    api_key=openai_api_key,  # ここもAPIキーを再設定
     model_name="text-embedding-ada-002"
 )
 

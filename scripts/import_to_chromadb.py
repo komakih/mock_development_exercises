@@ -2,44 +2,49 @@ import chromadb
 from chromadb.utils import embedding_functions
 import docx
 import os
-import shutil
 from dotenv import load_dotenv
+from openai import OpenAI
+import shutil
 
+# 環境変数の読み込み
 load_dotenv()
 openai_api_key = os.getenv("API_KEY")
 
 if not openai_api_key:
     raise ValueError("APIキーがありません。.envを確認してください。")
 
-# 永続化ディレクトリ（絶対パス推奨）
-persist_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "manual_db"))
-print(f"✅ 使用するデータ保存先: {persist_directory}")
+# 新しいOpenAIクライアント作成（1.x対応）
+openai_client = OpenAI(api_key=openai_api_key)
 
-# 古いデータを削除
+# ChromaDB永続化の設定
+persist_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "manual_db"))
+print(f"✅ データ保存先: {persist_directory}")
+
+# 古いデータ削除
 if os.path.exists(persist_directory):
     shutil.rmtree(persist_directory)
     print("🗑️ 古いデータを削除しました。")
 
-# 0.4.24ではPersistentClientを使用
+# ChromaDBクライアント作成（0.4.24利用時）
 client = chromadb.PersistentClient(path=persist_directory)
 
-# 埋め込み関数（OpenAI）設定
+# 新OpenAIクライアントを利用した埋め込み関数を作成
 openai_ef = embedding_functions.OpenAIEmbeddingFunction(
-    api_key=openai_api_key,
+    api_key=openai_api_key,  # 必ずキー指定を継続
     model_name="text-embedding-ada-002"
 )
 
-# コレクションを新規作成（永続化）
+# コレクション作成
 collection = client.get_or_create_collection(
     "manual_documents",
     embedding_function=openai_ef
 )
 
-# docxファイルのパス指定
+# docxファイルのパス取得
 doc_folder = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "documents"))
 doc_paths = [os.path.join(doc_folder, f) for f in os.listdir(doc_folder) if f.endswith(".docx")]
 
-# データを登録
+# ドキュメント登録
 for path in doc_paths:
     doc = docx.Document(path)
     full_text = "\n".join([para.text for para in doc.paragraphs if para.text.strip()])

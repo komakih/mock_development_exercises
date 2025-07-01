@@ -1,21 +1,11 @@
 from fastapi import FastAPI
-from api import chat, history, documents, users
-from dotenv import load_dotenv
-import os
+from api.chat import router as chat_router
 
-# 環境変数をロード
-load_dotenv()
+app = FastAPI(title="Manual Search AI API")
 
-# FastAPIインスタンス作成
-app = FastAPI(title="Manual Search AI API", version="1.0")
+# APIルーターを登録
+app.include_router(chat_router, prefix="/chat", tags=["Chat"])
 
-# 各APIルーターを登録（これから作成予定）
-app.include_router(chat.router, prefix="/chat", tags=["Chat"])
-app.include_router(history.router, prefix="/history", tags=["History"])
-app.include_router(documents.router, prefix="/documents", tags=["Documents"])
-app.include_router(users.router, prefix="/users", tags=["Users"])
-
-# トップページ
 @app.get("/")
 def read_root():
-    return {"message": "Welcome to Manual Search AI API"}
+    return {"message": "FastAPI server is running!"}

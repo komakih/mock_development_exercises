@@ -1,25 +1,17 @@
-import pytest
 from fastapi.testclient import TestClient
 from main import app
 
 client = TestClient(app)
 
-def test_create_conversation():
-    response = client.post("/history/", json={
-        "user_id": 1,
-        "message": "Hello",
-        "response": "Hi! How can I help you?"
+def test_search_documents():
+    response = client.post("/documents/search", json={
+        "query_text": "返品方法を教えてください",
+        "n_results": 2
     })
     assert response.status_code == 200
     data = response.json()
-    assert data["user_id"] == 1
-    assert data["message"] == "Hello"
-
-def test_get_conversation_history():
-    user_id = 1
-    response = client.get(f"/history/{user_id}")
-    assert response.status_code == 200
-    data = response.json()
-    assert isinstance(data, list)
-    assert len(data) > 0
-    assert data[0]["user_id"] == user_id
+    assert "results" in data
+    assert len(data["results"]) <= 2
+    for result in data["results"]:
+        assert "id" in result
+        assert "content" in result

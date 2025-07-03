@@ -76,3 +76,22 @@ def test_get_logs():
     # 存在しないログタイプのテスト
     response = client.get("/logs/invalid")
     assert response.status_code == 400
+
+def test_get_help_content():
+    # 一般的なヘルプ情報取得テスト
+    response = client.get("/help/help")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["filename"] == "help.md"
+    assert "# マニュアル検索AIヘルプ" in data["content"]
+
+    # FAQ情報取得テスト
+    response = client.get("/help/faq")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["filename"] == "faq.md"
+    assert "# よくある質問（FAQ）" in data["content"]
+
+    # 無効なファイル名指定テスト
+    response = client.get("/help/invalid")
+    assert response.status_code == 400

@@ -53,3 +53,10 @@ def test_user_deletion():
     users_response = client.get("/users/")
     users_list = users_response.json()
     assert all(user["id"] != user_id for user in users_list)
+
+def test_index_update():
+    response = client.post("/indexing/update")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["detail"] == "インデックス更新完了"
+

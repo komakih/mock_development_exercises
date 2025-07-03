@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Request
 from db.database import engine, Base
-from api import chat, history, documents, users, indexing, logs  # logsを追加
+from api import chat, history, documents, users, indexing, logs, help
 from api.utils import setup_error_logger, setup_access_logger
 
 # DBテーブル作成
@@ -18,7 +18,8 @@ app.include_router(history.router, prefix="/history", tags=["History"])
 app.include_router(documents.router, prefix="/documents", tags=["Documents"])
 app.include_router(users.router, prefix="/users", tags=["Users"])
 app.include_router(indexing.router, prefix="/indexing", tags=["Indexing"])
-app.include_router(logs.router, prefix="/logs", tags=["Logs"])  # 追加
+app.include_router(logs.router, prefix="/logs", tags=["Logs"])
+app.include_router(help.router, prefix="/help", tags=["Help"])
 
 # アクセスログミドルウェア
 @app.middleware("http")

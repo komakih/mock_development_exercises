@@ -60,3 +60,19 @@ def test_index_update():
     data = response.json()
     assert data["detail"] == "インデックス更新完了"
 
+def test_get_logs():
+    # エラーログ取得テスト
+    response = client.get("/logs/error")
+    assert response.status_code == 200
+    data = response.json()
+    assert "content" in data
+
+    # アクセスログ取得テスト
+    response = client.get("/logs/access")
+    assert response.status_code == 200
+    data = response.json()
+    assert "content" in data
+
+    # 存在しないログタイプのテスト
+    response = client.get("/logs/invalid")
+    assert response.status_code == 400

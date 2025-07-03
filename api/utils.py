@@ -33,3 +33,31 @@ def decode_jwt_token(token: str):
         return None
     except jwt.InvalidTokenError:
         return None
+
+import logging
+from logging.handlers import RotatingFileHandler
+import os
+
+# ログファイルのディレクトリを作成（存在しなければ）
+log_directory = "./logs"
+os.makedirs(log_directory, exist_ok=True)
+
+# エラーログの設定
+def setup_error_logger():
+    logger = logging.getLogger("error_logger")
+    logger.setLevel(logging.ERROR)
+    handler = RotatingFileHandler(f"{log_directory}/error.log", maxBytes=10*1024*1024, backupCount=5)
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    return logger
+
+# アクセスログの設定
+def setup_access_logger():
+    logger = logging.getLogger("access_logger")
+    logger.setLevel(logging.INFO)
+    handler = RotatingFileHandler(f"{log_directory}/access.log", maxBytes=10*1024*1024, backupCount=5)
+    formatter = logging.Formatter('%(asctime)s - %(message)s')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    return logger

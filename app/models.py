@@ -8,6 +8,21 @@ class User(db.Model):
     password_hash = db.Column(db.String(256), nullable=False)
     role = db.Column(db.String(20), default='user')
 
+    prompts = db.relationship('Prompt', backref='user', lazy=True)
+
+    def __repr__(self):
+        return f'<User {self.username}>'
+
+class Prompt(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    title = db.Column(db.String(128), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<Prompt {self.title}>'
+
 class ChatHistory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     thread_id = db.Column(db.String(64), index=True)

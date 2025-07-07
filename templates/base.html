@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}My Chat App{% endblock %}</title>
+</head>
+<body>
+    <nav>
+        {% if current_user.is_authenticated %}
+            <span>{{ current_user.username }}さん、ようこそ！</span>
+            <a href="{{ url_for('logout') }}">ログアウト</a>
+        {% else %}
+            <a href="{{ url_for('login') }}">ログイン</a>
+            <a href="{{ url_for('register') }}">新規登録</a>
+        {% endif %}
+    </nav>
+
+    {% block content %}{% endblock %}
+</body>
+</html>

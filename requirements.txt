@@ -1,0 +1,9 @@
+Flask>=2.3
+Flask-SQLAlchemy
+Flask-Migrate
+Flask-Login
+openai
+langchain
+llama_index
+chromadb
+

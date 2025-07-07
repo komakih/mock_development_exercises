@@ -1,6 +1,6 @@
 # Created by pytest automatically.
 .pytest_cache/
-.venv/
+venv/
 myenv/
 .envmyenv/
 manual_db/

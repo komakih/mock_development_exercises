@@ -1,0 +1,10 @@
+<h2>履歴一覧</h2>
+<ul>
+{% for thread in threads %}
+  <li>
+    <a href="{{ url_for('history_thread', thread_id=thread[0]) }}">
+      {{thread[1]}} ({{thread[2]}})
+    </a>
+  </li>
+{% endfor %}
+</ul>

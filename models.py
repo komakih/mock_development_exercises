@@ -1,14 +1,42 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
+from datetime import datetime, timezone
 
 db = SQLAlchemy()
 
-class User(UserMixin, db.Model):
+class User(UserMixin, db.Model):  # UserMixinを追加統合する
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(256), nullable=False)
     role = db.Column(db.String(20), default='user')
 
+    prompts = db.relationship('Prompt', backref='user', lazy=True)
+
     def __repr__(self):
         return f'<User {self.username}>'
+
+class Prompt(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    title = db.Column(db.String(128), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    def __repr__(self):
+        return f'<Prompt {self.title}>'
+
+class ChatHistory(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    thread_id = db.Column(db.String(36), index=True)
+    title = db.Column(db.String(128))
+    user_message = db.Column(db.Text)
+    assistant_message = db.Column(db.Text)
+    timestamp = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+class ChatMessage(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    history_id = db.Column(db.Integer, db.ForeignKey('chat_history.id'), nullable=False)
+    sender = db.Column(db.String(20))
+    message = db.Column(db.Text, nullable=False)
+    timestamp = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))

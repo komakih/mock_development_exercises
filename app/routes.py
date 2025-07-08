@@ -1,7 +1,6 @@
 from flask import Blueprint, request, jsonify, render_template, json, Response
 # from flask_login import login_required, current_user # ← 一旦不要
-from . import db
-from .models import Prompt
+from models import Prompt, db
 
 main = Blueprint('main', __name__)
 

@@ -1,4 +1,4 @@
-import os, openai
+import os, openai, chromadb
 from dotenv import load_dotenv
 from flask import render_template, redirect, url_for, flash, Flask, request, jsonify
 from flask_migrate import Migrate
@@ -6,10 +6,11 @@ from flask_login import login_user, logout_user, login_required, current_user, L
 from werkzeug.security import generate_password_hash, check_password_hash
 from forms import LoginForm, RegisterForm
 from models import db, User, ChatHistory
+from llama_index.core import VectorStoreIndex, StorageContext, PromptTemplate
+from llama_index.vector_stores.chroma import ChromaVectorStore
 import uuid
 import sys
 sys.path.append('/Users/hkomaki/Downloads/mock_development_exercises')
-
 from models import ChatHistory
 
 load_dotenv()
@@ -24,7 +25,6 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////Users/hkomaki/Downloads/mock_development_exercises/instance/app.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
-
 migrate = Migrate(app, db)
 
 # Flask-Loginの設定
@@ -39,6 +39,24 @@ def load_user(user_id):
 # DB初期化
 with app.app_context():
     db.create_all()
+
+# 日本語で回答するプロンプトを指定
+japanese_prompt = PromptTemplate(
+    "以下の文脈情報を参照して、質問に日本語で答えてください。\n"
+    "---------------------\n"
+    "{context_str}\n"
+    "---------------------\n"
+    "質問: {query_str}\n"
+    "回答:"
+)
+
+# ChromaDBとLlamaIndexの設定
+INDEX_DIR = "./index_storage"
+chroma_client = chromadb.PersistentClient(path=INDEX_DIR)
+chroma_collection = chroma_client.get_or_create_collection("document_collection")
+vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
+storage_context = StorageContext.from_defaults(vector_store=vector_store)
+rag_index = VectorStoreIndex.from_vector_store(vector_store, storage_context=storage_context)
 
 @app.route('/')
 def index():
@@ -114,25 +132,30 @@ def chat():
 
     return render_template('chat.html', response=response, question=question)
 
-# チャットAPIルート（JSON形式でのやり取り用）
+# RAGチャットルート
+@app.route('/rag_chat')
+@login_required
+def rag_chat():
+    return render_template('rag_chat.html')
+
+# チャットAPIルート（RAGを用いた社内文書検索機能）
 @app.route('/api/chat', methods=['POST'])
 @login_required
 def chat_api():
     user_input = request.json.get('message')
     thread_id = request.json.get('thread_id') or str(uuid.uuid4())
 
-    # OpenAI APIを使用した回答取得処理
-    api_response = openai.ChatCompletion.create(
-        model="gpt-4.1",
-        messages=[
-            {"role": "system", "content": "あなたは親切なアシスタントです。"},
-            {"role": "user", "content": user_input}
-        ]
+    # LlamaIndexを使用して社内文書から回答を生成
+    query_engine = rag_index.as_query_engine(
+        text_qa_template=japanese_prompt,
     )
+    response = query_engine.query(user_input)
+    assistant_response = response.response
 
-    assistant_response = api_response.choices[0].message.content
+    # ソース情報も履歴に含めて保存
+    sources = "\n".join([f"[類似度: {node.score:.2f}] {node.text}" for node in response.source_nodes])
 
-    # 履歴タイトル生成（最初の質問を利用）
+    # 履歴タイトル生成
     title = user_input if len(user_input) <= 20 else user_input[:20] + '...'
 
     # ChatHistoryに履歴を追加・保存
@@ -140,14 +163,15 @@ def chat_api():
         thread_id=thread_id,
         title=title,
         user_message=user_input,
-        assistant_message=assistant_response
+        assistant_message=assistant_response + "\n\nソース:\n" + sources
     )
     db.session.add(history_entry)
     db.session.commit()
 
     return jsonify({
         'thread_id': thread_id,
-        'assistant_message': assistant_response
+        'assistant_message': assistant_response,
+        'sources': sources
     })
 
 # 履歴一覧表示

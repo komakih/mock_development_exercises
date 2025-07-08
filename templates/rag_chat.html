@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>社内文書RAGチャット</title>
+    <script>
+    async function askQuestion() {
+        const query = document.getElementById("query").value;
+        const response = await fetch('/api/chat', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ message: query }) //←ここが重要
+        });
+    
+        if (!response.ok) {
+            const errText = await response.text();
+            console.error('Server error:', errText);
+            document.getElementById("response").innerText = "エラーが発生しました";
+            return;
+        }
+
+        const data = await response.json();
+        document.getElementById("response").innerText = data.assistant_message;
+
+        // ソース情報表示
+        document.getElementById("sources").innerText = data.sources;
+    }
+</script>
+</head>
+<body>
+    <h1>社内文書RAGチャット</h1>
+    <input type="text" id="query" placeholder="質問を入力">
+    <button onclick="askQuestion()">質問する</button>
+    <h2>回答</h2>
+    <pre id="response"></pre>
+    <h2>ソース文書（関連情報）</h2>
+    <pre id="sources"></pre>
+</body>
+</html>

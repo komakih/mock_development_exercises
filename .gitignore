@@ -3,4 +3,5 @@ __pycache__/
 instance/*.db
 .env
 *.pyc
-new_venv/
+.venv/
+index_storage/

@@ -11,9 +11,10 @@
     <div id="chat_area">
         {% if messages %}
             {% for msg in messages %}
-                <p><strong>あなた：</strong> {{ msg.user_message }}</p>
-                <p><strong>AI：</strong> {{ msg.assistant_message }}</p>
-                <hr>
+                <p>
+                    <strong>{{ 'あなた' if msg.sender == 'user' else 'AI' }}：</strong>
+                    {{ msg.message }}
+                </p>
             {% endfor %}
         {% elif response %}
             <p><strong>あなた：</strong> {{ question }}</p>
@@ -32,6 +33,30 @@
     <a href="{{ url_for('logout') }}">ログアウト</a>
 
     <script>
+    // 履歴読み込み（任意）
+    async function saveMessage(thread_id, sender, content) {
+        const response = await fetch('/save_message', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({thread_id, sender, content})
+        });
+        const data = await response.json();
+        return data.thread_id;
+    }
+
+    // 履歴読み込み用関数（任意で追加）
+    async function loadHistory(thread_id) {
+        const response = await fetch(`/history/${thread_id}`);
+        const data = await response.json();
+        const chatArea = document.getElementById('chat_area');
+        chatArea.innerHTML = '';
+        data.messages.forEach(msg => {
+            chatArea.innerHTML += `<p><strong>${msg.sender === 'user' ? 'あなた' : 'AI'}：</strong> ${msg.message}</p>`;
+        });
+        document.getElementById('thread_id').value = thread_id;
+    }
+
+    // チャット送信処理
     document.getElementById('chatForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const messageInput = document.getElementById('message');
@@ -49,7 +74,8 @@
 
         const chatArea = document.getElementById('chat_area');
         chatArea.innerHTML += `<p><strong>あなた：</strong> ${message}</p>`;
-        chatArea.innerHTML += `<p><strong>AI：</strong> ${data.assistant_message}</p><hr>`;
+        chatArea.innerHTML += `<p><strong>AI：</strong> ${data.assistant_message}</p>`;
+        chatArea.innerHTML += `<p style="font-size: 0.9em; color: gray;"><strong>ソース情報：</strong><br>${data.sources}</p><hr>`;
 
         messageInput.value = '';
     });

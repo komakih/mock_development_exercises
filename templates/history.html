@@ -1,10 +1,50 @@
-<h2>履歴一覧</h2>
-<ul>
-{% for thread in threads %}
-  <li>
-    <a href="{{ url_for('history_thread', thread_id=thread[0]) }}">
-      {{thread[1]}} ({{thread[2]}})
-    </a>
-  </li>
-{% endfor %}
-</ul>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>履歴一覧</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <h2>{{ current_user.username }} さんのチャット履歴一覧</h2>
+
+    {% if threads %}
+        <ul>
+            {% for thread in threads %}
+                <li>
+                    <a href="{{ url_for('history_thread', thread_id=thread.thread_id) }}">
+                        {{ thread.title }} ({{ thread.created_at.strftime('%Y-%m-%d %H:%M:%S') }})
+                    </a>
+                    <a href="#" onclick="deleteHistory('{{ thread.thread_id }}'); return false;" style="color:red;">
+                      削除
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>現在、履歴はありません。</p>
+    {% endif %}
+
+    <br>
+    <a href="{{ url_for('chat') }}">チャット画面へ戻る</a> |
+    <a href="{{ url_for('logout') }}">ログアウト</a>
+
+    <script>
+    async function deleteHistory(thread_id) {
+      if (confirm("本当にこの履歴を削除しますか？")) {
+          const response = await fetch(`/history/delete/${thread_id}`, {
+              method: 'POST',
+              headers: {'Content-Type': 'application/json'}
+          });
+          const result = await response.json();
+          if (result.status === "success") {
+              alert("履歴を削除しました。");
+              location.reload();
+          } else {
+              alert("削除に失敗しました。再試行してください。");
+          }
+      }
+    }
+    </script>
+</body>
+</html>

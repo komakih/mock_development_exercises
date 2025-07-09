@@ -12,10 +12,11 @@ class User(UserMixin, db.Model):  # UserMixinを追加統合する
     role = db.Column(db.String(20), default='user')
 
     prompts = db.relationship('Prompt', backref='user', lazy=True)
+    chat_histories = db.relationship('ChatHistory', backref='user', lazy=True)
 
     def __repr__(self):
         return f'<User {self.username}>'
-
+    
 class Prompt(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -29,14 +30,28 @@ class Prompt(db.Model):
 class ChatHistory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     thread_id = db.Column(db.String(36), index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  # ←追加
     title = db.Column(db.String(128))
-    user_message = db.Column(db.Text)
-    assistant_message = db.Column(db.Text)
-    timestamp = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    user_message = db.Column(db.Text, nullable=False)          # ← 追加
+    assistant_message = db.Column(db.Text, nullable=False)     # ← 追加
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))  # 作成日時を明確化
+
+    messages = db.relationship(
+        'ChatMessage',
+        backref='history',
+        cascade="all, delete-orphan",
+        lazy=True
+    )  # リレーションシップを明確に定義（カスケード削除）
+
+    def __repr__(self):
+        return f'<ChatHistory {self.title}>'
 
 class ChatMessage(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     history_id = db.Column(db.Integer, db.ForeignKey('chat_history.id'), nullable=False)
-    sender = db.Column(db.String(20))
+    sender = db.Column(db.String(20), nullable=False)  # 'user' or 'bot'
     message = db.Column(db.Text, nullable=False)
     timestamp = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    def __repr__(self):
+        return f'<ChatMessage {self.sender}: {self.message[:20]}...>'

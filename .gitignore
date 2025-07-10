@@ -4,4 +4,4 @@ instance/*.db
 .env
 *.pyc
 .venv/
-index_storage/
+index_storage/*

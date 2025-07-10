@@ -1,5 +1,5 @@
 import os, openai, chromadb, uuid
-from openai import OpenAI as OpenAIClient 
+from openai import OpenAI as OpenAIClient
 from dotenv import load_dotenv
 from flask import render_template, redirect, url_for, flash, Flask, request, jsonify
 from flask_migrate import Migrate
@@ -9,16 +9,23 @@ from forms import LoginForm, RegisterForm
 from models import db, User, ChatHistory, ChatMessage
 from openai_utils import generate_thread_title
 from llama_index.core import VectorStoreIndex, StorageContext, Settings, PromptTemplate
-from llama_index.llms.openai import OpenAI
+from llama_index.llms.openai import OpenAI as LlamaOpenAI
 from llama_index.embeddings.openai import OpenAIEmbedding
 from llama_index.vector_stores.chroma import ChromaVectorStore
 from llama_index.core.prompts.default_prompts import DEFAULT_TEXT_QA_PROMPT_TMPL
 from chromadb.config import Settings as ChromaSettings
+from modules.ambiguity import is_ambiguous
+from modules.faq_search import faq_query
+from modules.help_generator import generate_help_message
 
 load_dotenv()
 
 basedir = os.path.abspath(os.path.dirname(__file__))
-app = Flask(__name__, template_folder=os.path.join(basedir, 'templates'))
+app = Flask(
+    __name__, 
+    template_folder=os.path.join(basedir, 'templates'),
+    static_folder=os.path.join(basedir, 'app/static')  # ← 静的ファイル位置を明示
+)
 
 app.secret_key = '6c2ca336c9b12674bc6df1ab4403c806'
 openai_api_key = os.getenv("OPENAI_API_KEY").strip()
@@ -26,9 +33,10 @@ openai_api_key = os.getenv("OPENAI_API_KEY").strip()
 # OpenAIライブラリ側の設定
 openai.api_key = openai_api_key
 openai.base_url = "https://api.openai.com/v1"  # base_urlを明示的に指定
+openai_client = OpenAIClient(api_key=openai_api_key)
 
 # LlamaIndex側での明示的APIキー設定
-Settings.llm = OpenAI(api_key=openai_api_key)
+Settings.llm = LlamaOpenAI(api_key=openai_api_key)
 
 Settings.embed_model = OpenAIEmbedding(
     model="text-embedding-ada-002",
@@ -57,26 +65,24 @@ def load_user(user_id):
 with app.app_context():
     db.create_all()
 
-# ChromaDBとLlamaIndexの設定
-INDEX_DIR = "./index_storage"
-chroma_client = chromadb.PersistentClient(
-    path=INDEX_DIR, 
-    settings=ChromaSettings(anonymized_telemetry=False)
-)
+# ChromaDB初期化関数を追加 (新規追加部分)
+def get_rag_index():
+    chroma_client = chromadb.PersistentClient(
+        path="./index_storage",
+        settings=ChromaSettings(anonymized_telemetry=False)
+    )
 
-chroma_collection = chroma_client.get_or_create_collection("document_collection")
+    chroma_collection = chroma_client.get_or_create_collection("document_collection")
+    vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
+    storage_context = StorageContext.from_defaults(vector_store=vector_store)
 
-# ChromaDBとの連携を設定
-vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
-storage_context = StorageContext.from_defaults(vector_store=vector_store)
+    return VectorStoreIndex.from_vector_store(
+        vector_store, storage_context=storage_context
+    )
 
 # 日本語用QAプロンプト設定（最新版対応）
 japanese_prompt = PromptTemplate(DEFAULT_TEXT_QA_PROMPT_TMPL).partial_format(
     context_str="以下の文脈情報を参照して、質問に日本語で答えてください。"
-)
-
-rag_index = VectorStoreIndex.from_vector_store(
-    vector_store, storage_context=storage_context
 )
 
 @app.route('/')
@@ -141,7 +147,7 @@ def chat():
         question = request.form.get('question')
 
         # OpenAI APIに質問を送信して回答を取得する処理
-        api_response = openai.ChatCompletion.create(
+        api_response = openai_client.chat.completions.create(
             model="gpt-4.1",
             messages=[
                 {"role": "system", "content": "あなたは親切なアシスタントです。"},
@@ -153,18 +159,71 @@ def chat():
 
     return render_template('chat.html', response=response, question=question)
 
+@app.route('/chat_faq', methods=['GET'])
+@login_required
+def chat_faq_page():
+    return render_template('chat_faq.html')
+
+# FAQ連携のヘルプ機能付きチャットAPI
+@app.route('/chat_faq', methods=['POST'])
+@login_required
+def chat_faq():
+    user_input = request.json.get('message')
+    thread_id = request.json.get('thread_id') or str(uuid.uuid4())
+
+    if is_ambiguous(user_input):
+        faq_results = faq_query(user_input)
+        assistant_response = generate_help_message(faq_results)
+        sources = "FAQヘルプ機能による回答"
+    else:
+        # 明確な質問はGPT-4で回答
+        api_response = openai_client.chat.completions.create(
+            model="gpt-4-turbo",
+            messages=[
+                {"role": "system", "content": "あなたは親切なアシスタントです。"},
+                {"role": "user", "content": user_input}
+            ]
+        )
+        assistant_response = api_response.choices[0].message.content.strip()
+        sources = "通常チャット機能による回答"
+
+    # 履歴保存
+    title = user_input[:20] + '...' if len(user_input) > 20 else user_input
+    history_entry = ChatHistory(
+        thread_id=thread_id,
+        title=title,
+        user_message=user_input,
+        assistant_message=f"{assistant_response}\n\nソース:\n{sources}",
+        user_id=current_user.id
+    )
+    db.session.add(history_entry)
+    db.session.commit()
+
+    # メッセージ履歴を追加保存
+    db.session.add(ChatMessage(history_id=history_entry.id, sender='user', message=user_input))
+    db.session.add(ChatMessage(history_id=history_entry.id, sender='bot', message=assistant_response))
+    db.session.commit()
+
+    return jsonify({
+        'thread_id': thread_id,
+        'assistant_message': assistant_response,
+        'sources': sources
+    })
+
 # RAGチャットルート
 @app.route('/rag_chat')
 @login_required
 def rag_chat():
     return render_template('rag_chat.html')
 
-# チャットAPIルート（RAGを用いた社内文書検索機能）
 @app.route('/api/chat', methods=['POST'])
 @login_required
 def chat_api():
     user_input = request.json.get('message')
     thread_id = request.json.get('thread_id') or str(uuid.uuid4())
+
+    # rag_indexを毎回関数で取得（変更箇所）
+    rag_index = get_rag_index()
 
     # LlamaIndexを使用して社内文書から回答を生成
     query_engine = rag_index.as_query_engine(text_qa_template=japanese_prompt)
@@ -180,12 +239,9 @@ def chat_api():
         "申し訳ありませんが"
     ]
 
-    # 関連文書が空、または回答に特定のフレーズが含まれる場合、外部GPT-4を利用
     if (not response.source_nodes) or any(msg in assistant_response for msg in no_info_messages):
-        # OpenAIクライアントを明示的に初期化
-        openai_client = OpenAIClient(api_key=openai_api_key)  # 明確に修正済み
+        openai_client = OpenAI(api_key=openai_api_key)
         
-        # GPT-4で回答を取得（最新版の方法）
         openai_response = openai_client.chat.completions.create(
             model="gpt-4",
             messages=[
@@ -197,10 +253,8 @@ def chat_api():
         assistant_response = openai_response.choices[0].message.content.strip()
         sources = "外部のOpenAI GPT-4による回答"
 
-    # 履歴タイトル生成（先頭20文字）
     title = user_input if len(user_input) <= 20 else user_input[:20] + '...'
 
-    # 履歴情報を保存（DBに記録）
     history_entry = ChatHistory(
         thread_id=thread_id,
         title=title,
@@ -225,6 +279,51 @@ def chat_api():
     )
     db.session.add(assistant_msg_entry)
 
+    db.session.commit()
+
+    return jsonify({
+        'thread_id': thread_id,
+        'assistant_message': assistant_response,
+        'sources': sources
+    })
+
+@app.route('/api/chat_faq', methods=['POST'])
+@login_required
+def chat_faq_api():
+    user_input = request.json.get('message')
+    thread_id = request.json.get('thread_id') or str(uuid.uuid4())
+
+    if is_ambiguous(user_input):
+        faq_results = faq_query(user_input)
+        assistant_response = generate_help_message(faq_results)
+        sources = "FAQヘルプ機能による回答"
+    else:
+        # 明確な質問はGPT-4で回答
+        api_response = openai_client.chat.completions.create(
+            model="gpt-4-turbo",
+            messages=[
+                {"role": "system", "content": "あなたは親切なアシスタントです。"},
+                {"role": "user", "content": user_input}
+            ]
+        )
+        assistant_response = api_response.choices[0].message.content.strip()
+        sources = "通常チャット機能による回答"
+
+    # 履歴保存
+    title = user_input[:20] + '...' if len(user_input) > 20 else user_input
+    history_entry = ChatHistory(
+        thread_id=thread_id,
+        title=title,
+        user_message=user_input,
+        assistant_message=f"{assistant_response}\n\nソース:\n{sources}",
+        user_id=current_user.id
+    )
+    db.session.add(history_entry)
+    db.session.commit()
+
+    # メッセージ履歴を追加保存
+    db.session.add(ChatMessage(history_id=history_entry.id, sender='user', message=user_input))
+    db.session.add(ChatMessage(history_id=history_entry.id, sender='bot', message=assistant_response))
     db.session.commit()
 
     return jsonify({

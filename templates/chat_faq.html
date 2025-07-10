@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>FAQヘルプ付きチャット</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style_faq.css') }}">
+</head>
+<body>
+    <div id="chat-area"></div>
+    <input type="text" id="user-input" placeholder="質問を入力してください">
+    <button onclick="sendMessage()">送信</button>
+
+    <script>
+        async function sendMessage() {
+            const input = document.getElementById("user-input").value;
+            const responseArea = document.getElementById("chat-area");
+
+            const res = await fetch("/api/chat_faq", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: input })
+            });
+
+            const data = await res.json();
+            responseArea.innerHTML += `
+                <div class="${data.sources.includes('FAQ') ? 'help' : 'bot'}">
+                    ${data.assistant_message}
+                </div>
+            `;
+        }
+
+    </script>
+</body>
+</html>

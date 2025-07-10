@@ -1,0 +1,50 @@
+/* シンプルなチャット画面用スタイル */
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f8f8f8;
+    margin: 0;
+    padding: 20px;
+}
+
+#chat-area {
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 5px;
+    height: 400px;
+    overflow-y: auto;
+    background-color: #fff;
+    margin-bottom: 10px;
+}
+
+#user-input {
+    width: 80%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+button {
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+.bot, .help {
+    background-color: #e9f7ef;
+    padding: 8px;
+    border-radius: 4px;
+    margin-bottom: 5px;
+}
+
+.help {
+    background-color: #fff3cd;
+    border-left: 4px solid #ffc107;
+}

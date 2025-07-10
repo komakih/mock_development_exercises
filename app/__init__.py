@@ -1,41 +1,33 @@
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
-from flask_login import LoginManager  # ←追加
-import os
+from app.database import db
+from flask_login import LoginManager
 
-db = SQLAlchemy()
-migrate = Migrate()
-login_manager = LoginManager()  # ←追加
+# 各モジュールのBlueprintをインポート
+from app.modules.auth.routes import auth_bp
+from app.modules.profile.routes import profile_bp
+from app.modules.admin.routes import admin_bp
 
 def create_app():
-    app = Flask(__name__, instance_relative_config=True)
+    app = Flask(__name__)
 
-    # アプリ設定
-    app.config['SECRET_KEY'] = 'secret_key_here'
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(app.instance_path, 'app.db')
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-    # instanceフォルダ作成
-    os.makedirs(app.instance_path, exist_ok=True)
+    # コンフィグの設定
+    app.config.from_pyfile('../instance/config.py', silent=True)
 
     # DB初期化
     db.init_app(app)
-    migrate.init_app(app, db)
 
-    # Flask-Login初期化（重要）← ここを追加！
+    # Flask-Login設定
+    login_manager = LoginManager()
     login_manager.init_app(app)
-    #login_manager.login_view = 'auth.login'  # もしログインページがあれば指定（任意）
+    login_manager.login_view = 'auth.login'
 
-    # ユーザーの読み込み関数を指定
-    from models import User
+    # Blueprintをアプリに登録
+    app.register_blueprint(auth_bp, url_prefix='/auth')
+    app.register_blueprint(profile_bp, url_prefix='/profile')
+    app.register_blueprint(admin_bp, url_prefix='/admin')
 
-    @login_manager.user_loader
-    def load_user(user_id):
-        return User.query.get(int(user_id))
-
-    # Blueprint読み込み
-    from .routes import main as main_blueprint
-    app.register_blueprint(main_blueprint)
+    # DBの初回作成
+    with app.app_context():
+        db.create_all()
 
     return app

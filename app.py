@@ -240,7 +240,7 @@ def chat_api():
     ]
 
     if (not response.source_nodes) or any(msg in assistant_response for msg in no_info_messages):
-        openai_client = OpenAI(api_key=openai_api_key)
+        openai_client = OpenAIClient(api_key=openai_api_key)
         
         openai_response = openai_client.chat.completions.create(
             model="gpt-4",

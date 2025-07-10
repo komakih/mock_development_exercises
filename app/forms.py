@@ -13,3 +13,8 @@ class RegisterForm(FlaskForm):
     password = PasswordField('パスワード', validators=[DataRequired(), Length(min=6)])
     confirm_password = PasswordField('パスワード（確認用）', validators=[DataRequired(), EqualTo('password')])
     submit = SubmitField('登録')
+
+class ProfileForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired()])
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    submit = SubmitField('Update')

@@ -4,7 +4,7 @@ from flask_migrate import Migrate
 from flask_login import LoginManager  # ←追加
 import os
 
-db = SQLAlchemy()
+#db = SQLAlchemy()
 migrate = Migrate()
 login_manager = LoginManager()  # ←追加
 

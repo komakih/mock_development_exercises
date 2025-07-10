@@ -1,8 +1,13 @@
 from flask import Flask
-from app.database import db
+from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 
-# 各モジュールのBlueprintをインポート
+# DBおよびLoginManagerのインスタンス生成
+db = SQLAlchemy()
+login_manager = LoginManager()
+
+# 必要なインポートを追加
+from app.models import User
 from app.modules.auth.routes import auth_bp
 from app.modules.profile.routes import profile_bp
 from app.modules.admin.routes import admin_bp
@@ -10,18 +15,21 @@ from app.modules.admin.routes import admin_bp
 def create_app():
     app = Flask(__name__)
 
-    # コンフィグの設定
+    # コンフィグ設定
     app.config.from_pyfile('../instance/config.py', silent=True)
 
     # DB初期化
     db.init_app(app)
 
     # Flask-Login設定
-    login_manager = LoginManager()
     login_manager.init_app(app)
     login_manager.login_view = 'auth.login'
 
-    # Blueprintをアプリに登録
+    @login_manager.user_loader
+    def load_user(user_id):
+        return User.query.get(int(user_id))
+
+    # Blueprint登録
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(profile_bp, url_prefix='/profile')
     app.register_blueprint(admin_bp, url_prefix='/admin')

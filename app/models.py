@@ -22,7 +22,7 @@ class User(UserMixin, db.Model):  # UserMixinを追加統合する
     
 class Prompt(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     title = db.Column(db.String(128), nullable=False)
     content = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
@@ -33,7 +33,7 @@ class Prompt(db.Model):
 class ChatHistory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     thread_id = db.Column(db.String(36), index=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  # ←追加
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)  # ←追加
     title = db.Column(db.String(128))
     user_message = db.Column(db.Text, nullable=False)          # ← 追加
     assistant_message = db.Column(db.Text, nullable=False)     # ← 追加

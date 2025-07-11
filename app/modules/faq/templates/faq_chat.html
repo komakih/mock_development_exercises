@@ -2,7 +2,8 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>FAQヘルプ付きチャット</title>
+    <title>FAQ連携チャット</title>
+    <h2>FAQ連携チャット機能</h2>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style_faq.css') }}">
 </head>
 <body>
@@ -15,20 +16,21 @@
             const input = document.getElementById("user-input").value;
             const responseArea = document.getElementById("chat-area");
 
-            const res = await fetch("/api/chat_faq", {
+            const res = await fetch("/faq/faq-help", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ message: input })
             });
 
             const data = await res.json();
+            const message = data.suggestions && data.suggestions[0] ? data.suggestions[0].answer : "関連する情報が見つかりませんでした。";
+
             responseArea.innerHTML += `
-                <div class="${data.sources.includes('FAQ') ? 'help' : 'bot'}">
-                    ${data.assistant_message}
+                <div class="bot">
+                    ${message}
                 </div>
             `;
         }
-
     </script>
 </body>
 </html>

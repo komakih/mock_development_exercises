@@ -1,41 +1,50 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
-from flask_login import LoginManager  # ←追加
+from flask_login import LoginManager
 import os
 
+# DBおよびLoginManagerのインスタンス生成
 db = SQLAlchemy()
-migrate = Migrate()
-login_manager = LoginManager()  # ←追加
+login_manager = LoginManager()
+
+# 必要なインポートを追加
+from app.models import User
+from app.modules.auth.routes import auth_bp
+from app.modules.profile.routes import profile_bp
+from app.modules.admin.routes import admin_bp
+from app.modules.chat.routes import chat_bp
+from app.modules.faq.routes import faq_bp
+from app.modules.history.routes import history_bp
 
 def create_app():
-    app = Flask(__name__, instance_relative_config=True)
+    app = Flask(__name__)
 
-    # アプリ設定
-    app.config['SECRET_KEY'] = 'secret_key_here'
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(app.instance_path, 'app.db')
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-    # instanceフォルダ作成
-    os.makedirs(app.instance_path, exist_ok=True)
+    # コンフィグ設定
+    app.config.from_pyfile('../instance/config.py', silent=True)
+    basedir = os.path.abspath(os.path.dirname(__file__))
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, '../instance/app.db')
 
     # DB初期化
     db.init_app(app)
-    migrate.init_app(app, db)
 
-    # Flask-Login初期化（重要）← ここを追加！
+    # Flask-Login設定
     login_manager.init_app(app)
-    #login_manager.login_view = 'auth.login'  # もしログインページがあれば指定（任意）
-
-    # ユーザーの読み込み関数を指定
-    from models import User
+    login_manager.login_view = 'auth.login'
 
     @login_manager.user_loader
     def load_user(user_id):
         return User.query.get(int(user_id))
 
-    # Blueprint読み込み
-    from .routes import main as main_blueprint
-    app.register_blueprint(main_blueprint)
+    # Blueprint登録
+    app.register_blueprint(auth_bp, url_prefix='/auth')
+    app.register_blueprint(profile_bp, url_prefix='/profile')
+    app.register_blueprint(admin_bp, url_prefix='/admin')
+    app.register_blueprint(chat_bp, url_prefix='/')
+    app.register_blueprint(faq_bp, url_prefix='/faq')
+    app.register_blueprint(history_bp, url_prefix='/history')
+
+    # DBの初回作成
+    with app.app_context():
+        db.create_all()
 
     return app

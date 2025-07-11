@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>チャット履歴一覧</title>
+</head>
+<body>
+    <h2>チャット履歴一覧</h2>
+    <ul>
+        {% for history in histories %}
+            <li>
+                <a href="{{ url_for('history.history_detail', history_id=history.id) }}">
+                    {{ history.created_at.strftime('%Y-%m-%d %H:%M') }} - {{ history.title }}
+                </a>
+                <form action="{{ url_for('history.history_delete', history_id=history.id) }}" method="POST" style="display:inline;">
+                    <button type="submit">削除</button>
+                </form>
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

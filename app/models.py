@@ -1,8 +1,8 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from datetime import datetime, timezone
-
-db = SQLAlchemy()
+from app.database import db
+from werkzeug.security import check_password_hash
 
 class User(UserMixin, db.Model):  # UserMixinを追加統合する
     id = db.Column(db.Integer, primary_key=True)
@@ -14,12 +14,18 @@ class User(UserMixin, db.Model):  # UserMixinを追加統合する
     prompts = db.relationship('Prompt', backref='user', lazy=True)
     chat_histories = db.relationship('ChatHistory', backref='user', lazy=True)
 
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
     def __repr__(self):
         return f'<User {self.username}>'
     
 class Prompt(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     title = db.Column(db.String(128), nullable=False)
     content = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
@@ -30,7 +36,7 @@ class Prompt(db.Model):
 class ChatHistory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     thread_id = db.Column(db.String(36), index=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  # ←追加
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)  # ←追加
     title = db.Column(db.String(128))
     user_message = db.Column(db.Text, nullable=False)          # ← 追加
     assistant_message = db.Column(db.Text, nullable=False)     # ← 追加
@@ -55,3 +61,8 @@ class ChatMessage(db.Model):
 
     def __repr__(self):
         return f'<ChatMessage {self.sender}: {self.message[:20]}...>'
+
+class Faq(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    question = db.Column(db.String, nullable=False)
+    answer = db.Column(db.String, nullable=False)

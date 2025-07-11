@@ -12,6 +12,9 @@
                 <a href="{{ url_for('history.history_detail', history_id=history.id) }}">
                     {{ history.created_at }} - {{ history.user_message }}
                 </a>
+                <form action="{{ url_for('history.history_delete', history_id=history.id) }}" method="POST" style="display:inline;">
+                    <button type="submit">削除</button>
+                </form>
             </li>
         {% endfor %}
     </ul>

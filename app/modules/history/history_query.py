@@ -11,3 +11,11 @@ def save_chat_history(user_message, assistant_message):
     new_history = ChatHistory(user_message=user_message, assistant_message=assistant_message)
     db.session.add(new_history)
     db.session.commit()
+
+def delete_chat_history(history_id):
+    history = ChatHistory.query.get(history_id)
+    if history:
+        db.session.delete(history)
+        db.session.commit()
+        return True
+    return False

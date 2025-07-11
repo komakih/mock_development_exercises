@@ -5,3 +5,6 @@ instance/*.db
 *.pyc
 .venv/
 index_storage/*
+chroma_data/
+*.sqlite3
+data/document_collection/

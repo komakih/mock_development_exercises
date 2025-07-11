@@ -16,7 +16,7 @@
             const input = document.getElementById("user-input").value;
             const responseArea = document.getElementById("chat-area");
 
-            const res = await fetch("/faq/faq-help", {  // この行を修正
+            const res = await fetch("/faq/faq-help", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ message: input })
@@ -31,7 +31,6 @@
                 </div>
             `;
         }
-
     </script>
 </body>
 </html>

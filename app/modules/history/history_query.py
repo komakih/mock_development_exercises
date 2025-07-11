@@ -1,5 +1,6 @@
 from app.database import db
 from app.models import ChatHistory
+from app.openai_utils import generate_thread_title
 
 def get_chat_histories(limit=10):
     return ChatHistory.query.order_by(ChatHistory.created_at.desc()).limit(limit).all()
@@ -19,3 +20,14 @@ def delete_chat_history(history_id):
         db.session.commit()
         return True
     return False
+
+def save_chat_history(user_message, assistant_message, user_id=None):
+    title = generate_thread_title(user_message)
+    new_history = ChatHistory(
+        user_message=user_message,
+        assistant_message=assistant_message,
+        user_id=user_id,
+        title=title
+    )
+    db.session.add(new_history)
+    db.session.commit()

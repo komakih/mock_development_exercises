@@ -26,3 +26,13 @@ def get_chatgpt_response(messages):
     ).choices[0].message.content
 
     return response, source
+
+def generate_thread_title(content):
+    response = openai_client.chat.completions.create(
+        model="gpt-4",
+        messages=[
+            {"role": "system", "content": "以下のメッセージから短いタイトルを生成してください。"},
+            {"role": "user", "content": content}
+        ]
+    )
+    return response.choices[0].message.content.strip()

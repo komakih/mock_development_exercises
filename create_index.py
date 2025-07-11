@@ -1,46 +1,43 @@
 import os
-from dotenv import load_dotenv
-from llama_index.core import VectorStoreIndex, StorageContext, SimpleDirectoryReader, Settings
-from llama_index.embeddings.openai import OpenAIEmbedding
-from llama_index.vector_stores.chroma import ChromaVectorStore
+import glob
 import chromadb
-import openai
+import docx
+from openai import OpenAI
 
-# 環境変数を読み込み
-load_dotenv()
+# OpenAI API設定
+openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-# APIキーを明示的に取得し設定
-openai_api_key = os.getenv("OPENAI_API_KEY").strip()
-openai.api_key = openai_api_key  # openaiライブラリ側で明示的に指定
+# ChromaDBの永続化クライアントを設定（絶対パス指定）
+db_path = os.path.abspath("./data/document_collection")
+client = chromadb.PersistentClient(path=db_path)
 
-# llama-index側のEmbedding設定（最新版に完全対応）
-Settings.embed_model = OpenAIEmbedding(
-    model="text-embedding-ada-002",
-    api_key=openai_api_key,
-    timeout=60,
-    max_retries=2
-)
+# コレクションを作成または取得
+collection_name = "document_collection"
+collection = client.get_or_create_collection(collection_name)
 
-DATA_DIR = "./data"
-INDEX_DIR = "./index_storage"
+# docxファイルの場所を指定
+docx_files = glob.glob("./data/*.docx")
 
-# 文書の読み込み
-documents = SimpleDirectoryReader(DATA_DIR).load_data()
+for docx_file in docx_files:
+    doc = docx.Document(docx_file)
+    texts = [para.text for para in doc.paragraphs if para.text.strip() != ""]
 
-# ChromaDB設定（テレメトリー無効化）
-chroma_client = chromadb.PersistentClient(
-    path=INDEX_DIR,
-    settings=chromadb.config.Settings(anonymized_telemetry=False)
-)
+    for idx, text in enumerate(texts):
+        # Embedding生成（OpenAIを使用）
+        embedding = openai_client.embeddings.create(
+            input=text,
+            model="text-embedding-3-small"
+        ).data[0].embedding
 
-chroma_collection = chroma_client.get_or_create_collection("document_collection")
-vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
-storage_context = StorageContext.from_defaults(vector_store=vector_store)
+        # ChromaDBに挿入
+        collection.add(
+            ids=[f"{os.path.basename(docx_file)}_{idx}"],
+            embeddings=[embedding],
+            documents=[text],
+            metadatas=[{"source": os.path.basename(docx_file)}]
+        )
 
-# インデックス作成と保存
-index = VectorStoreIndex.from_documents(
-    documents,
-    storage_context=storage_context
-)
-
-print("インデックス作成完了")
+# 挿入件数を表示
+print("ドキュメント数:", collection.count())
+print("コレクション名:", collection.name)
+print("保存パス:", db_path)

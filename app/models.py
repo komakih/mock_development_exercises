@@ -1,7 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from datetime import datetime, timezone
-from app import db
+from app.database import db
 from werkzeug.security import check_password_hash
 
 class User(UserMixin, db.Model):  # UserMixinを追加統合する
@@ -58,3 +58,8 @@ class ChatMessage(db.Model):
 
     def __repr__(self):
         return f'<ChatMessage {self.sender}: {self.message[:20]}...>'
+
+class Faq(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    question = db.Column(db.String, nullable=False)
+    answer = db.Column(db.String, nullable=False)

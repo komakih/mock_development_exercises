@@ -1,6 +1,7 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
+import os
 
 # DBおよびLoginManagerのインスタンス生成
 db = SQLAlchemy()
@@ -20,6 +21,8 @@ def create_app():
 
     # コンフィグ設定
     app.config.from_pyfile('../instance/config.py', silent=True)
+    basedir = os.path.abspath(os.path.dirname(__file__))
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, '../instance/app.db')
 
     # DB初期化
     db.init_app(app)

@@ -1,7 +1,8 @@
-from flask import Blueprint, render_template, redirect, url_for
+from flask import Blueprint, render_template, redirect, url_for, flash
 from app.forms import LoginForm, RegisterForm
 from flask_login import login_user, logout_user, login_required
-from app.models import User
+from app.models import User, db
+from werkzeug.security import generate_password_hash
 
 # Blueprintを作成（モジュール名を指定）
 auth_bp = Blueprint('auth', __name__, template_folder='templates')
@@ -13,7 +14,10 @@ def login():
         user = User.query.filter_by(email=form.email.data).first()
         if user and user.check_password(form.password.data):
             login_user(user)
-            return redirect(url_for('profile.user_profile'))
+            flash('ログインに成功しました。', 'success')
+            return redirect(url_for('chat.chat'))
+        else:
+            flash('メールアドレスまたはパスワードが正しくありません。', 'danger')
     return render_template('auth/login.html', form=form)
 
 
@@ -21,15 +25,30 @@ def login():
 @login_required
 def logout():
     logout_user()
+    flash('ログアウトしました。', 'info')
     return redirect(url_for('auth.login'))
-
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegisterForm()
     if form.validate_on_submit():
-        user = User(username=form.username.data, email=form.email.data)
-        user.set_password(form.password.data)
-        user.save()
+
+        existing_user = User.query.filter_by(email=form.email.data).first()
+        if existing_user:
+            flash('このメールアドレスは既に登録されています。', 'danger')
+            return redirect(url_for('auth.register'))
+
+        # この形でpassword_hashを設定する
+        new_user = User(
+            username=form.username.data,
+            email=form.email.data,
+            password_hash=generate_password_hash(form.password.data)
+        )
+
+        db.session.add(new_user)
+        db.session.commit()
+
+        flash('アカウント登録に成功しました。ログインしてください。', 'success')
         return redirect(url_for('auth.login'))
+
     return render_template('auth/register.html', form=form)

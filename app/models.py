@@ -14,6 +14,9 @@ class User(UserMixin, db.Model):  # UserMixinを追加統合する
     prompts = db.relationship('Prompt', backref='user', lazy=True)
     chat_histories = db.relationship('ChatHistory', backref='user', lazy=True)
 
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 

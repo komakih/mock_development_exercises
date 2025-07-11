@@ -11,7 +11,10 @@ class RegisterForm(FlaskForm):
     username = StringField('ユーザー名', validators=[DataRequired(), Length(min=4, max=25)])
     email = StringField('メールアドレス', validators=[DataRequired(), Email()])
     password = PasswordField('パスワード', validators=[DataRequired(), Length(min=6)])
-    confirm_password = PasswordField('パスワード（確認用）', validators=[DataRequired(), EqualTo('password')])
+    confirm_password = PasswordField('パスワード（確認用）', validators=[
+        DataRequired(),
+        EqualTo('password', message='パスワードが一致しません。')
+    ])
     submit = SubmitField('登録')
 
 class ProfileForm(FlaskForm):

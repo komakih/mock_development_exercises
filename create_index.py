@@ -15,6 +15,9 @@ client = chromadb.PersistentClient(path=db_path)
 collection_name = "document_collection"
 collection = client.get_or_create_collection(collection_name)
 
+# 現在のコレクション内の既存のIDを取得して重複を防ぐ
+existing_ids = set(collection.get().get('ids', []))  # ←これを追加
+
 # docxファイルの場所を指定
 docx_files = glob.glob("./data/*.docx")
 
@@ -23,21 +26,18 @@ for docx_file in docx_files:
     texts = [para.text for para in doc.paragraphs if para.text.strip() != ""]
 
     for idx, text in enumerate(texts):
-        # Embedding生成（OpenAIを使用）
-        embedding = openai_client.embeddings.create(
-            input=text,
-            model="text-embedding-3-small"
-        ).data[0].embedding
+        embedding_id = f"{os.path.basename(docx_file)}_{idx}"
 
-        # ChromaDBに挿入
-        collection.add(
-            ids=[f"{os.path.basename(docx_file)}_{idx}"],
-            embeddings=[embedding],
-            documents=[text],
-            metadatas=[{"source": os.path.basename(docx_file)}]
-        )
+        if embedding_id not in existing_ids:
+            embedding = openai_client.embeddings.create(
+                input=text,
+                model="text-embedding-3-small"
+            ).data[0].embedding
 
-# 挿入件数を表示
-print("ドキュメント数:", collection.count())
-print("コレクション名:", collection.name)
-print("保存パス:", db_path)
+            collection.add(
+                ids=[embedding_id],
+                embeddings=[embedding],
+                documents=[text]
+            )
+
+print("インデックス作成完了")

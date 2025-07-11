@@ -13,6 +13,7 @@ from app.modules.profile.routes import profile_bp
 from app.modules.admin.routes import admin_bp
 from app.modules.chat.routes import chat_bp
 from app.modules.faq.routes import faq_bp
+from app.modules.history.routes import history_bp
 
 def create_app():
     app = Flask(__name__)
@@ -37,6 +38,7 @@ def create_app():
     app.register_blueprint(admin_bp, url_prefix='/admin')
     app.register_blueprint(chat_bp, url_prefix='/')
     app.register_blueprint(faq_bp, url_prefix='/faq')
+    app.register_blueprint(history_bp, url_prefix='/history')
 
     # DBの初回作成
     with app.app_context():

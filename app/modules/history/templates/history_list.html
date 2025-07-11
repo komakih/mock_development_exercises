@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>チャット履歴一覧</title>
+</head>
+<body>
+    <h2>チャット履歴一覧</h2>
+    <ul>
+        {% for history in histories %}
+        <li>{{ history.created_at.astimezone(timezone('Asia/Tokyo')).strftime('%Y-%m-%d %H:%M:%S') }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

@@ -11,6 +11,9 @@
         <input type="text" name="user_input">
         <input type="submit" value="送信">
     </form>
+    <form action="{{ url_for('chat.reset_chat') }}" method="post">
+        <button type="submit">新しいチャットを開始</button>
+    </form>
     <div>
         {% for message in messages %}
             <p><strong>{{ message.role }} ({{ message.source }}):</strong> {{ message.content }}</p>

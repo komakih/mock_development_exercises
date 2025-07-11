@@ -36,3 +36,14 @@ def generate_thread_title(content):
         ]
     )
     return response.choices[0].message.content.strip()
+
+def generate_thread_title(content):
+    response = openai_client.chat.completions.create(
+        model="gpt-4",
+        messages=[
+            {"role": "system", "content": "以下の内容から15文字以内で簡潔なタイトルを生成してください。"},
+            {"role": "user", "content": content}
+        ]
+    )
+    title = response.choices[0].message.content.strip()
+    return title

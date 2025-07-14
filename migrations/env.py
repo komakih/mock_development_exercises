@@ -1,8 +1,6 @@
 import logging
 from logging.config import fileConfig
-
 from flask import current_app
-
 from alembic import context
 
 # this is the Alembic Config object, which provides
@@ -106,6 +104,18 @@ def run_migrations_online():
         with context.begin_transaction():
             context.run_migrations()
 
+    from app import create_app
+    from app.database import db
+    app = create_app()
+
+    with app.app_context():
+        connectable = db.engine.connect()
+
+        with connectable:
+            context.configure(connection=connectable, target_metadata=db.Model.metadata)
+
+            with context.begin_transaction():
+                context.run_migrations()
 
 if context.is_offline_mode():
     run_migrations_offline()

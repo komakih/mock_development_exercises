@@ -32,7 +32,7 @@ def delete_user(user_id):
     db.session.commit()
     return redirect(url_for('admin.user_list'))
 
-@app.route('/admin/user/create')
+@admin_bp.route('/user/create')
 @require_permission('create_user')
 def create_user():
     return "ユーザー作成画面"

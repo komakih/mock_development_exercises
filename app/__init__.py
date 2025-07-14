@@ -15,6 +15,7 @@ from app.modules.admin.routes import admin_bp
 from app.modules.chat.routes import chat_bp
 from app.modules.faq.routes import faq_bp
 from app.modules.history.routes import history_bp
+from app.modules.errors.errors import errors_bp
 
 def create_app():
     app = Flask(__name__)
@@ -46,5 +47,12 @@ def create_app():
     # DBの初回作成
     with app.app_context():
         db.create_all()
+
+    # エラーハンドラーの登録
+    app.register_blueprint(errors_bp)
+
+    @app.route('/trigger-error')
+    def trigger_error():
+        raise Exception('意図的に発生させたテストエラー')
 
     return app

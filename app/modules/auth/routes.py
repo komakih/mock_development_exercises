@@ -2,7 +2,6 @@ from flask import Blueprint, render_template, redirect, url_for, flash
 from app.forms import LoginForm, RegisterForm
 from flask_login import login_user, logout_user, login_required
 from app.models import User, db, Role
-from werkzeug.security import generate_password_hash
 
 # Blueprintを作成（モジュール名を指定）
 auth_bp = Blueprint('auth', __name__, template_folder='templates')

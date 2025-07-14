@@ -7,6 +7,8 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from app import create_app
 from app.database import db
 from app.models import User, Role, Permission
+from app.modules.auth.auth import require_permission
+from flask_login import login_user
 
 @pytest.fixture
 def app():
@@ -34,6 +36,12 @@ def app():
 
         db.session.commit()
 
+        # ここにルートを追加（重要！）
+        @app.route('/some_protected_route')
+        @require_permission('edit_history')
+        def protected_route():
+            return "許可されました", 200
+
         yield app
         db.drop_all()
 
@@ -47,7 +55,7 @@ def test_roles_permissions_created(app):
 
 def test_default_role_on_user_registration(app):
     user = User(username='testuser', email='test@example.com')
-    user.set_password('password')  # 正しくモデルのメソッドを使用
+    user.set_password('password')
     default_role = Role.query.filter_by(name='User').first()
     user.roles.append(default_role)
     db.session.add(user)
@@ -62,21 +70,16 @@ def test_role_permissions(app):
 
 def test_route_permission(client, app):
     user = User(username='testuser', email='test@example.com')
-    user.set_password('password')  # モデルのメソッドを使用
+    user.set_password('password')
+    default_role = Role.query.filter_by(name='User').first()
+    user.roles.append(default_role)
     db.session.add(user)
     db.session.commit()
 
-    client.post('/login', data={'username': 'testuser', 'password': 'password'})
+    with client:
+        # ユーザーをログイン状態に設定
+        with app.test_request_context():
+            login_user(user)
 
-    @app.route('/some_protected_route')
-    def protected_route():
-        from app.modules.auth.auth import require_permission
-
-        @require_permission('edit_history')
-        def protected():
-            return "許可されました", 200
-
-        return protected()
-
-    response = client.get('/some_protected_route')
-    assert response.status_code == 403
+        response = client.get('/some_protected_route')
+        assert response.status_code == 403

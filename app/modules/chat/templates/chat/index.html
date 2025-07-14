@@ -25,6 +25,9 @@
             {% if 'edit_history' in current_user.permissions %}
                 <li><a href="{{ url_for('history.edit') }}">履歴編集</a></li>
             {% endif %}
+            {% if current_user.has_permission('edit_chat') %}
+                <button>チャット編集</button>
+            {% endif %}
         </ul>
         {% for message in messages %}
             <p><strong>{{ message.role }} ({{ message.source }}):</strong> {{ message.content }}</p>

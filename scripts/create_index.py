@@ -19,7 +19,7 @@ collection = client.get_or_create_collection(collection_name)
 existing_ids = set(collection.get().get('ids', []))  # ←これを追加
 
 # docxファイルの場所を指定
-docx_files = glob.glob("./data/*.docx")
+docx_files = glob.glob("./data/docs/*.docx")
 
 for docx_file in docx_files:
     doc = docx.Document(docx_file)

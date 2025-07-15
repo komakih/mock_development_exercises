@@ -16,6 +16,7 @@ from app.modules.chat.routes import chat_bp
 from app.modules.faq.routes import faq_bp
 from app.modules.history.routes import history_bp
 from app.modules.errors.errors import errors_bp
+from app.modules.routes.index_update import bp as index_update_bp
 
 def create_app():
     app = Flask(__name__)
@@ -43,13 +44,12 @@ def create_app():
     app.register_blueprint(chat_bp, url_prefix='/chat')
     app.register_blueprint(faq_bp, url_prefix='/faq')
     app.register_blueprint(history_bp, url_prefix='/history')
+    app.register_blueprint(errors_bp)
+    app.register_blueprint(index_update_bp)
 
     # DBの初回作成
     with app.app_context():
         db.create_all()
-
-    # エラーハンドラーの登録
-    app.register_blueprint(errors_bp)
 
     @app.errorhandler(403)
     def forbidden(e):

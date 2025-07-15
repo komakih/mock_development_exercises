@@ -45,7 +45,7 @@ def create_app():
     app.register_blueprint(faq_bp, url_prefix='/faq')
     app.register_blueprint(history_bp, url_prefix='/history')
     app.register_blueprint(errors_bp)
-    app.register_blueprint(index_update_bp, url_prefix='/update_index')
+    app.register_blueprint(index_update_bp)
 
     # DBの初回作成
     with app.app_context():

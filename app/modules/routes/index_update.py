@@ -13,4 +13,4 @@ def update_index():
             flash(f"インデックス更新失敗: {result['error']}", "error")
         return redirect(url_for('index_update.update_index'))
 
-    return render_template('routes/index_update.html')
+    return render_template('index_update.html')

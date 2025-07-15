@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, redirect, url_for, flash
-from app.forms import LoginForm, RegisterForm
 from flask_login import login_user, logout_user, login_required
+from werkzeug.security import generate_password_hash
+from app.forms import LoginForm, RegisterForm
 from app.models import User, db, Role
 
 # Blueprintを作成（モジュール名を指定）

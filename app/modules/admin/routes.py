@@ -1,7 +1,9 @@
-from flask import Blueprint, render_template, redirect, url_for, request
+from flask import Blueprint, render_template, redirect, url_for, request, flash
 from flask_login import login_required
 from app.models import User, db
 from app.modules.auth.auth import require_permission
+from app.modules.admin.forms import CreateUserForm
+from app.database import db
 
 # Blueprintを作成（モジュール名を指定）
 admin_bp = Blueprint('admin', __name__, template_folder='templates', url_prefix='/admin')
@@ -32,7 +34,24 @@ def delete_user(user_id):
     db.session.commit()
     return redirect(url_for('admin.user_list'))
 
-@admin_bp.route('/user/create')
+@admin_bp.route('/')
+@require_permission('create_user')
+def admin_index():
+    return render_template('admin/index.html')
+
+@admin_bp.route('/user/create', methods=['GET', 'POST'])
 @require_permission('create_user')
 def create_user():
-    return "ユーザー作成画面"
+    form = CreateUserForm()
+    if form.validate_on_submit():
+        new_user = User(
+            username=form.username.data,
+            email=form.email.data
+        )
+        new_user.set_password(form.password.data)
+        db.session.add(new_user)
+        db.session.commit()
+        flash('新しいユーザーを作成しました。', 'success')
+        return redirect(url_for('admin.admin_index'))
+
+    return render_template('admin/create_user.html', form=form)

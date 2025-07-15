@@ -5,7 +5,7 @@ from app.modules.history.history_query import save_chat_history
 
 chat_bp = Blueprint('chat', __name__, template_folder='templates')
 
-@chat_bp.route('/', methods=['GET', 'POST'])
+@chat_bp.route('/chat', methods=['GET', 'POST'])
 def chat():
     if 'messages' not in session:
         session['messages'] = []

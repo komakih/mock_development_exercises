@@ -40,7 +40,7 @@ def create_app():
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(profile_bp, url_prefix='/profile')
     app.register_blueprint(admin_bp, url_prefix='/admin')
-    app.register_blueprint(chat_bp, url_prefix='/')
+    app.register_blueprint(chat_bp, url_prefix='/chat')
     app.register_blueprint(faq_bp, url_prefix='/faq')
     app.register_blueprint(history_bp, url_prefix='/history')
 

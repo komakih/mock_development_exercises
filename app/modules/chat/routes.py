@@ -1,16 +1,24 @@
 # app/modules/chat/routes.py
-from flask import Blueprint, render_template, session, request, redirect, url_for
+from flask import Blueprint, render_template, session, request, redirect, url_for, flash
+from flask_login import login_required, current_user
 from app.openai_utils import get_chatgpt_response, generate_thread_title
 from app.modules.history.history_query import save_chat_history
+from app.modules.auth.auth import require_permission
 
 chat_bp = Blueprint('chat', __name__, template_folder='templates')
 
 @chat_bp.route('/', methods=['GET', 'POST'])
+@login_required
+@require_permission('post_chat')
 def chat():
     if 'messages' not in session:
         session['messages'] = []
 
     if request.method == 'POST':
+        if not current_user.has_permission('post_chat'):
+            flash('投稿権限がありません。', 'warning')
+            abort(403)
+
         user_input = request.form['user_input']
         
         # まずユーザーメッセージをセッションに追加する

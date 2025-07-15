@@ -1,8 +1,8 @@
 from flask import Blueprint, render_template, redirect, url_for, flash
-from app.forms import LoginForm, RegisterForm
 from flask_login import login_user, logout_user, login_required
-from app.models import User, db
 from werkzeug.security import generate_password_hash
+from app.forms import LoginForm, RegisterForm
+from app.models import User, db, Role
 
 # Blueprintを作成（モジュール名を指定）
 auth_bp = Blueprint('auth', __name__, template_folder='templates')
@@ -44,6 +44,10 @@ def register():
             email=form.email.data,
             password_hash=generate_password_hash(form.password.data)
         )
+
+        default_role = Role.query.filter_by(name='User').first()
+        if default_role:
+            new_user.roles.append(default_role)
 
         db.session.add(new_user)
         db.session.commit()

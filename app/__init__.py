@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 import os
@@ -40,7 +40,7 @@ def create_app():
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(profile_bp, url_prefix='/profile')
     app.register_blueprint(admin_bp, url_prefix='/admin')
-    app.register_blueprint(chat_bp, url_prefix='/')
+    app.register_blueprint(chat_bp, url_prefix='/chat')
     app.register_blueprint(faq_bp, url_prefix='/faq')
     app.register_blueprint(history_bp, url_prefix='/history')
 
@@ -50,6 +50,10 @@ def create_app():
 
     # エラーハンドラーの登録
     app.register_blueprint(errors_bp)
+
+    @app.errorhandler(403)
+    def forbidden(e):
+        return render_template('errors/403.html'), 403
 
     @app.route('/trigger-error')
     def trigger_error():

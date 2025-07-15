@@ -15,6 +15,20 @@
         <button type="submit">新しいチャットを開始</button>
     </form>
     <div>
+        <ul>
+            {% if 'view_chat' in current_user.permissions %}
+                <li><a href="{{ url_for('chat.index') }}">チャット</a></li>
+            {% endif %}
+            {% if 'view_history' in current_user.permissions %}
+                <li><a href="{{ url_for('history.index') }}">履歴管理</a></li>
+            {% endif %}
+            {% if 'edit_history' in current_user.permissions %}
+                <li><a href="{{ url_for('history.edit') }}">履歴編集</a></li>
+            {% endif %}
+            {% if current_user.has_permission('edit_chat') %}
+                <button>チャット編集</button>
+            {% endif %}
+        </ul>
         {% for message in messages %}
             <p><strong>{{ message.role }} ({{ message.source }}):</strong> {{ message.content }}</p>
         {% endfor %}

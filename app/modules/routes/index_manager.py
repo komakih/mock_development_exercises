@@ -22,18 +22,40 @@ class IndexManager:
     def update_index():
         start_time = time.time()
         try:
+            current_hashes = IndexManager.get_current_hashes(DOCS_DIR)
+            previous_hashes = IndexManager.load_hashes()
+
+            changed_files = IndexManager.get_changed_files(current_hashes, previous_hashes)
+
+            if not changed_files:
+                return {'success': True, 'document_count': 0, 'time': 0, 'message': '変更されたファイルはありません'}
+
             if os.path.exists(TMP_INDEX_DIR):
                 shutil.rmtree(TMP_INDEX_DIR)
             os.makedirs(TMP_INDEX_DIR, exist_ok=True)
-            doc_count = IndexManager.create_index(DOCS_DIR, TMP_INDEX_DIR)
+
+            # 差分のあるファイルだけインデックスを作成
+            documents = SimpleDirectoryReader(input_files=changed_files).load_data()
+            index = VectorStoreIndex.from_documents(documents)
+            index.storage_context.persist(persist_dir=TMP_INDEX_DIR)
+
             if os.path.exists(PROD_INDEX_DIR):
                 shutil.rmtree(PROD_INDEX_DIR)
             shutil.move(TMP_INDEX_DIR, PROD_INDEX_DIR)
+
+            # ハッシュ値を保存する処理をここで実施
+            IndexManager.save_hashes(current_hashes)
+
             elapsed_time = time.time() - start_time
-            return {'success': True, 'document_count': doc_count, 'time': elapsed_time}
+            return {
+                'success': True,
+                'document_count': len(changed_files),
+                'time': elapsed_time
+            }
+
         except Exception as e:
             return {'success': False, 'error': str(e)}
-    
+
     @staticmethod
     def file_hash(filepath):
         hasher = hashlib.md5()

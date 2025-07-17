@@ -1,14 +1,19 @@
-import os
-import shutil
-import time
-import hashlib
-import json
+import os, logging, shutil, time, hashlib, json
 from llama_index.core import VectorStoreIndex, SimpleDirectoryReader
+from logging.handlers import TimedRotatingFileHandler
 
 DOCS_DIR = 'data/docs'
 TMP_INDEX_DIR = 'data/tmp_index'
 PROD_INDEX_DIR = 'data/index'
 HASH_FILE = 'data/index/docs_hashes.json'
+
+# ロギング設定（ファイルの先頭付近で定義）
+logger = logging.getLogger('IndexUpdateLogger')
+logger.setLevel(logging.INFO)
+handler = TimedRotatingFileHandler('logs/index_update.log', when='midnight', interval=1, backupCount=7)
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - [IndexUpdate] - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
 class IndexManager:
     @staticmethod
@@ -21,6 +26,8 @@ class IndexManager:
     @staticmethod
     def update_index():
         start_time = time.time()
+        logger.info("インデックス更新処理開始")
+
         try:
             current_hashes = IndexManager.get_current_hashes(DOCS_DIR)
             previous_hashes = IndexManager.load_hashes()
@@ -47,6 +54,9 @@ class IndexManager:
             IndexManager.save_hashes(current_hashes)
 
             elapsed_time = time.time() - start_time
+            logger.info(f"変更された文書数: {len(changed_files)}")
+            logger.info(f"インデックス更新処理終了（所要時間: {elapsed_time:.2f}秒）")
+
             return {
                 'success': True,
                 'document_count': len(changed_files),
@@ -54,6 +64,7 @@ class IndexManager:
             }
 
         except Exception as e:
+            logging.error(f"インデックス更新処理中にエラーが発生しました: {str(e)}")
             return {'success': False, 'error': str(e)}
 
     @staticmethod

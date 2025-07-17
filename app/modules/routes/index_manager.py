@@ -8,13 +8,12 @@ PROD_INDEX_DIR = 'data/index'
 HASH_FILE = 'data/index/docs_hashes.json'
 
 # ロギング設定（ファイルの先頭付近で定義）
-log_handler = TimedRotatingFileHandler('logs/index_update.log', when='midnight', interval=1, backupCount=7)
-logging.basicConfig(
-    level=logging.INFO,
-    handlers=[log_handler],
-    format='%(asctime)s - %(levelname)s - [IndexUpdate] - %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S'
-)
+logger = logging.getLogger('IndexUpdateLogger')
+logger.setLevel(logging.INFO)
+handler = TimedRotatingFileHandler('logs/index_update.log', when='midnight', interval=1, backupCount=7)
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - [IndexUpdate] - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
 class IndexManager:
     @staticmethod
@@ -27,6 +26,8 @@ class IndexManager:
     @staticmethod
     def update_index():
         start_time = time.time()
+        logger.info("インデックス更新処理開始")
+
         try:
             current_hashes = IndexManager.get_current_hashes(DOCS_DIR)
             previous_hashes = IndexManager.load_hashes()
@@ -53,7 +54,9 @@ class IndexManager:
             IndexManager.save_hashes(current_hashes)
 
             elapsed_time = time.time() - start_time
-            logging.info(f"インデックス更新処理が成功しました: {len(changed_files)} 件のドキュメントが更新されました。処理時間: {elapsed_time}秒")
+            logger.info(f"変更された文書数: {len(changed_files)}")
+            logger.info(f"インデックス更新処理終了（所要時間: {elapsed_time:.2f}秒）")
+
             return {
                 'success': True,
                 'document_count': len(changed_files),

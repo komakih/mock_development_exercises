@@ -1,18 +1,27 @@
-async function sendMessage() {
+document.getElementById("chat-form").addEventListener("submit", async function(e) {
+    e.preventDefault();
+
     const input = document.getElementById("user-input").value;
     const responseArea = document.getElementById("chat-area");
 
-    const res = await fetch("/chat_faq", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: input })
-    });
+    try {
+        const res = await fetch("/faq/faq-help", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message: input })
+        });
 
-    const data = await res.json();
+        const data = await res.json();
 
-    responseArea.innerHTML += `
-        <div class="${data.sources.includes('FAQ') ? 'help' : 'bot'}">
-            ${data.assistant_message}
-        </div>
-    `;
-}
+        // シンプルに回答を表示
+        responseArea.innerHTML += `
+            <div class="bot">
+                ${data.answer}
+            </div>
+        `;
+
+    } catch (error) {
+        console.error('Error:', error);
+        responseArea.innerHTML += `<div class="bot text-danger">エラーが発生しました。</div>`;
+    }
+});

@@ -1,11 +1,10 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>500 Internal Server Error</title>
-</head>
-<body>
-    <h1>サーバーエラーが発生しました</h1>
-    <p>システム管理者に連絡してください。</p>
-    <a href="/">ホームに戻る</a>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container text-center mt-5">
+    <h1 class="display-4">500 Internal Server Error</h1>
+    <p class="lead">サーバ内部でエラーが発生しました。</p>
+    <p>ご不便をおかけして申し訳ありません。しばらく経ってから再度お試しください。</p>
+    <a href="{{ url_for('chat.chat') }}" class="btn btn-primary">ホームへ戻る</a>
+</div>
+{% endblock %}

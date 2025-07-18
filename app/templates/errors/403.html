@@ -1,12 +1,9 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <title>403 権限がありません</title>
-</head>
-<body>
-    <h1>403 - 権限がありません</h1>
-    <p>申し訳ありませんが、この操作を行う権限がありません。</p>
-    <a href="{{ url_for('chat.chat') }}">戻る</a>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container text-center mt-5">
+    <h1 class="display-4">403 Forbidden</h1>
+    <p class="lead">アクセス権限がありません。</p>
+    <a href="{{ url_for('chat.chat') }}" class="btn btn-primary">ホームへ戻る</a>
+</div>
+{% endblock %}

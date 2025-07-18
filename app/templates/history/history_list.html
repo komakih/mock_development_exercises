@@ -1,11 +1,7 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <title>チャット履歴一覧</title>
-</head>
-<body>
-    <h2>チャット履歴一覧</h2>
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>チャット履歴一覧</h1>
     <ul>
         {% for history in histories %}
             <li>
@@ -18,5 +14,4 @@
             </li>
         {% endfor %}
     </ul>
-</body>
-</html>
+{% endblock %}

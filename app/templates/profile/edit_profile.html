@@ -1,28 +1,36 @@
-<!-- app/modules/profile/templates/profile/edit_profile.html -->
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <title>プロフィール編集</title>
-</head>
-<body>
-    <h2>プロフィール編集フォーム</h2>
-    <form method="POST">
-        {{ form.hidden_tag() }}
-        <p>
-            {{ form.username.label }}<br>
-            {{ form.username(size=32) }}
-        </p>
-        <p>
-            {{ form.email.label }}<br>
-            {{ form.email(size=32) }}
-        </p>
-        <p>
-            <label>Slack Webhook URL:</label>
-            <input type="text" name="webhook_url" value="{{ webhook_url }}" style="width: 500px;">
-            <button type="submit">設定更新</button>
-        </p>
-        <p>{{ form.submit() }}</p>
-    </form>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card shadow">
+                    <div class="card-header">
+                        <h2 class="mb-0">プロフィール編集フォーム</h2>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST">
+                            {{ form.hidden_tag() }}
+                            <div class="mb-3">
+                                {{ form.username.label(class="form-label") }}
+                                {{ form.username(class="form-control", size=32) }}
+                            </div>
+                            <div class="mb-3">
+                                {{ form.email.label(class="form-label") }}
+                                {{ form.email(class="form-control", size=32) }}
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Slack Webhook URL:</label>
+                                <input type="text" name="webhook_url" value="{{ webhook_url }}" class="form-control" style="max-width: 500px;">
+                            </div>
+                            <div class="mb-3 d-flex gap-2">
+                                <button type="submit" class="btn btn-primary">設定更新</button>
+                                {{ form.submit(class="btn btn-secondary") }}
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

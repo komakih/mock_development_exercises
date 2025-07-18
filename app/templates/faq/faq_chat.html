@@ -1,36 +1,22 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <title>FAQ連携チャット</title>
-    <h2>FAQ連携チャット機能</h2>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style_faq.css') }}">
-</head>
-<body>
-    <div id="chat-area"></div>
-    <input type="text" id="user-input" placeholder="質問を入力してください">
-    <button onclick="sendMessage()">送信</button>
+{% extends "base.html" %}
 
-    <script>
-        async function sendMessage() {
-            const input = document.getElementById("user-input").value;
-            const responseArea = document.getElementById("chat-area");
-
-            const res = await fetch("/faq/faq-help", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message: input })
-            });
-
-            const data = await res.json();
-            const message = data.suggestions && data.suggestions[0] ? data.suggestions[0].answer : "関連する情報が見つかりませんでした。";
-
-            responseArea.innerHTML += `
-                <div class="bot">
-                    ${message}
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <h2 class="mb-4">FAQチャット</h2>
+            <div id="chat-area" class="border rounded p-3 mb-3" style="height:400px; overflow:auto;">
+                <!-- チャット内容がここに表示されます -->
+            </div>
+            <form id="chat-form">
+                <div class="input-group">
+                    <input type="text" class="form-control" id="user-input" placeholder="質問を入力してください">
+                    <button class="btn btn-primary" type="submit">送信</button>
                 </div>
-            `;
-        }
-    </script>
-</body>
-</html>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/chat_faq.js') }}"></script>
+{% endblock %}

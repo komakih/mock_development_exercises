@@ -1,23 +1,11 @@
-<!-- app/modules/auth/templates/auth/login.html -->
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <title>ログイン</title>
-</head>
-<body>
-    <h2>ログインフォーム</h2>
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>ログイン</h1>
     <form method="POST">
         {{ form.hidden_tag() }}
-        <p>
-            {{ form.email.label }}<br>
-            {{ form.email(size=32) }}
-        </p>
-        <p>
-            {{ form.password.label }}<br>
-            {{ form.password(size=32) }}
-        </p>
+        <p>{{ form.email.label }}<br>{{ form.email(size=32) }}</p>
+        <p>{{ form.password.label }}<br>{{ form.password(size=32) }}</p>
         <p>{{ form.submit() }}</p>
     </form>
-</body>
-</html>
+{% endblock %}

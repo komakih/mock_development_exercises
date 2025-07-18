@@ -1,14 +1,16 @@
-<!-- app/modules/history/templates/history_detail.html -->
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <title>チャット履歴詳細</title>
-</head>
-<body>
-    <h2>チャット履歴詳細</h2>
-    <p><strong>日時:</strong> {{ history.created_at }}</p>
-    <p><strong>ユーザーのメッセージ:</strong> {{ history.user_message }}</p>
-    <p><strong>アシスタントの回答:</strong> {{ history.assistant_message }}</p>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="container mt-5">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="mb-0">チャット履歴詳細</h2>
+            </div>
+            <div class="card-body">
+                <p><strong>日時:</strong> {{ history.created_at }}</p>
+                <p><strong>ユーザーのメッセージ:</strong> {{ history.user_message }}</p>
+                <p><strong>アシスタントの回答:</strong> {{ history.assistant_message }}</p>
+            </div>
+        </div>
+    </div>
+{% endblock %}

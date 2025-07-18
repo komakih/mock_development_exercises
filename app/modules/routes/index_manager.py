@@ -41,6 +41,7 @@ class IndexManager:
                 shutil.rmtree(TMP_INDEX_DIR)
             os.makedirs(TMP_INDEX_DIR, exist_ok=True)
 
+            # raise Exception("インデックス更新処理中にエラーが発生しました。") # デバッグ用の例外です
             # 差分のあるファイルだけインデックスを作成
             documents = SimpleDirectoryReader(input_files=changed_files).load_data()
             index = VectorStoreIndex.from_documents(documents)

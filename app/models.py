@@ -22,6 +22,9 @@ class User(UserMixin, db.Model):
     def has_permission(self, permission_name):
         return any(permission.name == permission_name for role in self.roles for permission in role.permissions)
     
+    def is_admin(self):
+        return self.role and self.role.name == 'admin'
+    
 class Prompt(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)

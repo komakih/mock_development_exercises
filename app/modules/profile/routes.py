@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for
+from flask import Blueprint, render_template, redirect, url_for, request
 from flask_login import login_required, current_user
 from app.forms import ProfileForm
 from app.models import db, AppConfig
@@ -14,7 +14,7 @@ def user_profile():
     if request.method == 'POST' and current_user.is_admin:
         new_webhook_url = request.form.get('webhook_url')
         AppConfig.set_config('SLACK_WEBHOOK_URL', new_webhook_url)
-        return redirect(url_for('profile.profile'))
+        return redirect(url_for('profile.user_profile'))
 
     form = ProfileForm(obj=current_user)
     if form.validate_on_submit():
@@ -22,4 +22,5 @@ def user_profile():
         current_user.email = form.email.data
         db.session.commit()
         return redirect(url_for('profile.user_profile'))
+    
     return render_template('profile/edit_profile.html', form=form)

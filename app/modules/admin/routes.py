@@ -39,7 +39,7 @@ def delete_user(user_id):
 def admin_index():
     return render_template('admin/index.html')
 
-@admin_bp.route('/user/create', methods=['GET', 'POST'])
+@admin_bp.route('/users/create', methods=['GET', 'POST'])
 @require_permission('create_user')
 def create_user():
     form = CreateUserForm()
@@ -54,4 +54,4 @@ def create_user():
         flash('新しいユーザーを作成しました。', 'success')
         return redirect(url_for('admin.admin_index'))
 
-    return render_template('admin/create_user.html', form=form)
+    return render_template('admin/user_create.html', form=form)

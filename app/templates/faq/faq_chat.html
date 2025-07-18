@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <h2 class="mb-4">FAQチャット</h2>
+            <div id="chat-area" class="border rounded p-3 mb-3" style="height:400px; overflow:auto;">
+                <!-- チャット内容がここに表示されます -->
+            </div>
+            <form id="chat-form">
+                <div class="input-group">
+                    <input type="text" class="form-control" id="user-input" placeholder="質問を入力してください">
+                    <button class="btn btn-primary" type="submit">送信</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/chat_faq.js') }}"></script>
+{% endblock %}

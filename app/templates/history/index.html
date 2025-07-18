@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+<nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
+    <div class="container">
+        <a class="navbar-brand" href="#">履歴管理</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                {% if 'view_chat' in current_user.permissions %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('chat.index') }}">チャット</a>
+                    </li>
+                {% endif %}
+                {% if 'view_history' in current_user.permissions %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('history.index') }}">履歴管理</a>
+                    </li>
+                {% endif %}
+                {% if 'edit_history' in current_user.permissions %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('history.edit') }}">履歴編集</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>
+{% endblock %}

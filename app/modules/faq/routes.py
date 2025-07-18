@@ -20,4 +20,4 @@ def faq_help():
     
 @faq_bp.route('/chat', methods=['GET'])
 def faq_chat():
-    return render_template('faq_chat.html')
+    return render_template('faq/faq_chat.html')

@@ -1,20 +1,15 @@
-<!-- app/modules/admin/templates/admin/user_list.html -->
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <title>ユーザー一覧</title>
-</head>
-<body>
-    <h2>ユーザー一覧</h2>
-    <table>
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>ユーザー一覧</h1>
+    <table class="table">
         <thead>
             <tr>
                 <th>ID</th>
                 <th>ユーザー名</th>
                 <th>メールアドレス</th>
                 <th>ロール</th>
-                <th>編集</th>
+                <th>操作</th>
             </tr>
         </thead>
         <tbody>
@@ -29,5 +24,4 @@
         {% endfor %}
         </tbody>
     </table>
-</body>
-</html>
+{% endblock %}

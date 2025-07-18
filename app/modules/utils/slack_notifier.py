@@ -1,10 +1,8 @@
-import os
 import requests
+from app.models import AppConfig
 
 def send_slack_message(message, webhook_url=None):
-    if webhook_url is None:
-        webhook_url = os.getenv("SLACK_WEBHOOK_URL")
-
+    webhook_url = AppConfig.get_config('SLACK_WEBHOOK_URL')
     if webhook_url is None:
         raise ValueError("Slack webhook URLが設定されていません。")
 

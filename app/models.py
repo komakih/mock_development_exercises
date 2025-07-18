@@ -77,12 +77,32 @@ class Permission(db.Model):
     name = db.Column(db.String(80), unique=True, nullable=False)
     description = db.Column(db.String(255))
 
-role_permissions = db.Table('role_permissions',
-    db.Column('role_id', db.Integer, db.ForeignKey('role.id'), primary_key=True),
-    db.Column('permission_id', db.Integer, db.ForeignKey('permission.id'), primary_key=True)
-)
+    role_permissions = db.Table('role_permissions',
+        db.Column('role_id', db.Integer, db.ForeignKey('role.id'), primary_key=True),
+        db.Column('permission_id', db.Integer, db.ForeignKey('permission.id'), primary_key=True)
+    )
 
-user_roles = db.Table('user_roles',
-    db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
-    db.Column('role_id', db.Integer, db.ForeignKey('role.id'), primary_key=True)
-)
+    user_roles = db.Table('user_roles',
+        db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
+        db.Column('role_id', db.Integer, db.ForeignKey('role.id'), primary_key=True)
+    )
+
+class AppConfig(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    config_key = db.Column(db.String(255), unique=True, nullable=False)
+    config_value = db.Column(db.Text, nullable=False)
+
+    @staticmethod
+    def get_config(key):
+        config = AppConfig.query.filter_by(config_key=key).first()
+        return config.config_value if config else None
+
+    @staticmethod
+    def set_config(key, value):
+        config = AppConfig.query.filter_by(config_key=key).first()
+        if config:
+            config.config_value = value
+        else:
+            config = AppConfig(config_key=key, config_value=value)
+            db.session.add(config)
+        db.session.commit()

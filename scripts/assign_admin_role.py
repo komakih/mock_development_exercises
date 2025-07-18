@@ -9,7 +9,7 @@ from app.models import User, Role
 app = create_app()
 
 with app.app_context():
-    user = User.query.filter_by(username='admintest').first()
+    user = User.query.filter_by(username='管理者１号').first()
     admin_role = Role.query.filter_by(name='Admin').first()
 
     if user and admin_role:

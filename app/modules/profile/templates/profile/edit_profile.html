@@ -17,6 +17,11 @@
             {{ form.email.label }}<br>
             {{ form.email(size=32) }}
         </p>
+        <p>
+            <label>Slack Webhook URL:</label>
+            <input type="text" name="webhook_url" value="{{ webhook_url }}" style="width: 500px;">
+            <button type="submit">設定更新</button>
+        </p>
         <p>{{ form.submit() }}</p>
     </form>
 </body>

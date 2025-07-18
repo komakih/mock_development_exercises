@@ -1,6 +1,7 @@
 from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
+from flask_migrate import Migrate
 import os
 
 # DBおよびLoginManagerのインスタンス生成
@@ -36,6 +37,8 @@ def create_app():
     @login_manager.user_loader
     def load_user(user_id):
         return User.query.get(int(user_id))
+
+    migrate = Migrate(app, db)
 
     # Blueprint登録
     app.register_blueprint(auth_bp, url_prefix='/auth')

@@ -15,7 +15,7 @@ def login():
         if user and user.check_password(form.password.data):
             login_user(user)
             flash('ログインに成功しました。', 'success')
-            return redirect(url_for('chat.chat'))
+            return redirect(url_for('chat.index'))
         else:
             flash('メールアドレスまたはパスワードが正しくありません。', 'danger')
     return render_template('auth/login.html', form=form)

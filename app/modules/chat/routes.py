@@ -10,7 +10,7 @@ chat_bp = Blueprint('chat', __name__, template_folder='templates')
 @chat_bp.route('/', methods=['GET', 'POST'])
 @login_required
 @require_permission('post_chat')
-def chat():
+def index():
     if 'messages' not in session:
         session['messages'] = []
 
@@ -39,4 +39,4 @@ def chat():
 def reset_chat():
     session.pop('messages', None)
     session.pop('thread_title', None)
-    return redirect(url_for('chat.chat'))
+    return redirect(url_for('chat.index'))

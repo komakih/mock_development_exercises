@@ -64,4 +64,8 @@ def create_app():
     def trigger_error():
         raise Exception('意図的に発生させたテストエラー')
 
+    @app.route('/')
+    def index():
+        return 'Hello, HTTPS!'
+
     return app

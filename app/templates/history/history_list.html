@@ -1,17 +1,35 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>チャット履歴一覧</h1>
-    <ul>
-        {% for history in histories %}
-            <li>
-                <a href="{{ url_for('history.history_detail', history_id=history.id) }}">
-                    {{ history.created_at.strftime('%Y-%m-%d %H:%M') }} - {{ history.title }}
-                </a>
-                <form action="{{ url_for('history.history_delete', history_id=history.id) }}" method="POST" style="display:inline;">
-                    <button type="submit">削除</button>
-                </form>
-            </li>
-        {% endfor %}
-    </ul>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-2 bg-light sidebar py-4">
+            {% include 'layout/sidebar.html' %}
+        </div>
+
+        <!-- Main History Area -->
+        <div class="col-md-10">
+        <!-- Navbar -->
+            {% include 'layout/navbar.html' %}
+
+            <!-- 履歴一覧の内容 -->
+            <div class="history-container border rounded p-4 shadow-sm" style="height:75vh; overflow-y:auto;">
+                <h1>チャット履歴一覧</h1>
+                <ul>
+                    {% for history in histories %}
+                        <li>
+                            <a href="{{ url_for('history.history_detail', history_id=history.id) }}">
+                                {{ history.created_at.strftime('%Y-%m-%d %H:%M') }} - {{ history.title }}
+                            </a>
+                            <form action="{{ url_for('history.history_delete', history_id=history.id) }}" method="POST" style="display:inline;">
+                                <button type="submit">削除</button>
+                            </form>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

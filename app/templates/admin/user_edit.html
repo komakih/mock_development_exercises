@@ -1,19 +1,37 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container mt-5">
-    <h2 class="mb-4">ユーザー編集</h2>
-    <form method="post">
-        <div class="mb-3">
-            <label for="username" class="form-label">ユーザー名</label>
-            <input type="text" class="form-control" id="username" name="username" value="{{ user.username }}" required>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-2 bg-light sidebar py-4">
+            {% include 'layout/sidebar.html' %}
         </div>
-        <div class="mb-3">
-            <label for="email" class="form-label">メールアドレス</label>
-            <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" required>
+
+        <!-- Main User Edit Area -->
+        <div class="col-md-10">
+            <!-- Navbar -->
+            {% include 'layout/navbar.html' %}
+
+            <!-- ユーザー編集の内容 -->
+            <div class="user-edit-container border rounded p-4 shadow-sm" style="height:75vh; overflow-y:auto;">
+                <div class="container mt-5">
+                    <h2 class="mb-4">ユーザー編集</h2>
+                    <form method="post">
+                        <div class="mb-3">
+                            <label for="username" class="form-label">ユーザー名</label>
+                            <input type="text" class="form-control" id="username" name="username" value="{{ user.username }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">メールアドレス</label>
+                            <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">更新</button>
+                        <a href="{{ url_for('admin.user_list') }}" class="btn btn-secondary">キャンセル</a>
+                    </form>
+                </div>
+            </div>
         </div>
-        <button type="submit" class="btn btn-primary">更新</button>
-        <a href="{{ url_for('admin.user_list') }}" class="btn btn-secondary">キャンセル</a>
-    </form>
+    </div>
 </div>
 {% endblock %}

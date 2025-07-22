@@ -2,6 +2,7 @@ from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_migrate import Migrate
+from app.modules.ssl.https_setup import run_app_with_https
 import os
 
 # DBおよびLoginManagerのインスタンス生成
@@ -21,6 +22,13 @@ from app.modules.routes.index_update import bp as index_update_bp
 
 def create_app():
     app = Flask(__name__)
+
+    @app.route('/')
+    def index():
+        return 'Hello, HTTPS!'
+
+        if __name__ == '__main__':
+            run_app_with_https(app)
 
     # コンフィグ設定
     app.config.from_pyfile('../instance/config.py', silent=True)

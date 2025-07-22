@@ -16,13 +16,15 @@
       <!-- Chat Messages -->
       <div class="chat-container border rounded p-4 shadow-sm" style="height:75vh; overflow-y:auto;">
         {% if messages %}
-            {% for msg in messages %}
-                <div class="alert alert-secondary">{{ msg }}</div>
-            {% endfor %}
+          {% for msg in messages %}
+            <div class="alert {% if msg.role == 'user' %}alert-primary text-end ms-auto{% else %}alert-secondary text-start me-auto{% endif %}" style="width:70%;">
+              {{ msg.content }}
+            </div>
+          {% endfor %}
         {% else %}
-            <div class="text-muted">メッセージはまだありません。</div>
+          <div class="text-muted">メッセージはまだありません。</div>
         {% endif %}
-</div>
+      </div>
 
       <!-- Chat Input -->
       <form method="POST" action="{{ url_for('chat.index') }}" class="mt-3">

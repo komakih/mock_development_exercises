@@ -17,7 +17,7 @@ from app.modules.chat.routes import chat_bp
 from app.modules.faq.routes import faq_bp
 from app.modules.history.routes import history_bp
 from app.modules.errors.errors import errors_bp
-from app.modules.routes.index_update import bp as index_update_bp
+from app.modules.routes.index_update import index_bp
 from app.modules.main.routes import main_bp
 
 def create_app():
@@ -49,7 +49,7 @@ def create_app():
     app.register_blueprint(faq_bp, url_prefix='/faq')
     app.register_blueprint(history_bp, url_prefix='/history')
     app.register_blueprint(errors_bp)
-    app.register_blueprint(index_update_bp)
+    app.register_blueprint(index_bp)
     app.register_blueprint(main_bp)
 
     # DBの初回作成

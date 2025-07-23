@@ -31,7 +31,7 @@
         <div class="input-group">
           <input type="text" class="form-control" name="user_input" placeholder="質問を入力してください..." {% if not current_user.has_permission('post_chat') %}disabled{% endif %}>
           <button class="btn btn-primary" type="submit" {% if not current_user.has_permission('post_chat') %}disabled{% endif %}>送信</button>
-          <button class="btn btn-outline-danger" formaction="{{ url_for('chat.reset_chat') }}" type="submit">リセット</button>
+          <button class="btn btn-outline-danger" formaction="{{ url_for('chat.reset_chat') }}" type="submit" {% if not current_user.has_permission('post_chat') %}disabled{% endif %}>リセット</button>
         </div>
       </form>
     </div>

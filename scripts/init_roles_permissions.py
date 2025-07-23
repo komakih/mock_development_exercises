@@ -6,13 +6,15 @@ app = create_app()
 
 roles_permissions = {
     'Admin': [
-        'create_user', 'edit_user', 'delete_user',
+        'user_list', 'create_user', 'edit_user', 'delete_user',
+        'index_ignite',
         'view_chat', 'post_chat', 'edit_chat', 'delete_chat',
         'view_history', 'edit_history', 'delete_history',
         'view_document', 'edit_document', 'delete_document'
     ],
     'Moderator': [
-        'create_user', 'edit_user',
+        'user_list', 'create_user', 'edit_user',
+        'index_ignite',
         'view_chat', 'post_chat', 'edit_chat', 'delete_chat',
         'view_history', 'edit_history',
         'view_document', 'edit_document'
@@ -29,9 +31,11 @@ roles_permissions = {
 }
 
 permissions_desc = {
+    'user_list': 'ユーザー一覧',
     'create_user': 'ユーザー作成',
     'edit_user': 'ユーザー情報編集',
     'delete_user': 'ユーザー削除',
+    'index_ignite': 'インデックス更新',
     'view_chat': 'チャット閲覧',
     'post_chat': 'チャット投稿',
     'edit_chat': 'チャット編集',

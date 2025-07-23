@@ -4,4 +4,5 @@ from app.modules.ssl.https_setup import ssl_bp
 app = create_app()
 
 if __name__ == '__main__':
-   ssl_bp(app)
+   #ssl_bp(app)
+   app.run(debug=True)

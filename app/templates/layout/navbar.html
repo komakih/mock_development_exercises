@@ -6,15 +6,29 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-        <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.logout') }}">ログアウト</a></li>
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('auth.logout') }}">ログアウト</a>
+        </li>
+
+        {% if current_user.has_permission('user_list') or current_user.has_permission('create_user') %}
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">ユーザー管理</a>
           <ul class="dropdown-menu dropdown-menu-end">
+            {% if current_user.has_permission('user_list') %}
             <li><a class="dropdown-item" href="{{ url_for('admin.user_list') }}">ユーザー一覧</a></li>
+            {% endif %}
+            {% if current_user.has_permission('create_user') %}
             <li><a class="dropdown-item" href="{{ url_for('admin.create_user') }}">ユーザー作成</a></li>
+            {% endif %}
           </ul>
         </li>
-        <li class="nav-item"><a class="nav-link" href="{{ url_for('index_update.index') }}">インデックス更新</a></li>
+        {% endif %}
+
+        {% if current_user.has_permission('index_ignite') %}
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('index_update.index') }}">インデックス更新</a>
+        </li>
+        {% endif %}
       </ul>
     </div>
   </div>

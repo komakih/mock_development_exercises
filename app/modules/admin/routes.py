@@ -1,8 +1,8 @@
-from flask import Blueprint, render_template, redirect, url_for, request, flash
-from flask_login import login_required
+from flask import Blueprint, render_template, redirect, url_for, request, flash, abort
+from flask_login import login_required, current_user
 from app.models import User, db
 from app.modules.auth.auth import require_permission
-from app.modules.admin.forms import CreateUserForm
+from app.modules.admin.forms import CreateUserForm, EditUserForm
 from app.database import db
 
 # Blueprintを作成（モジュール名を指定）
@@ -11,27 +11,44 @@ admin_bp = Blueprint('admin', __name__, template_folder='templates', url_prefix=
 @admin_bp.route('/users')
 @login_required
 def user_list():
+    if not current_user.has_permission('user_list'):
+        flash('ユーザー一覧閲覧権限がありません。', 'warning')
+        abort(403)
+
     users = User.query.all()
     return render_template('admin/user_list.html', users=users)
 
 @admin_bp.route('/users/edit/<int:user_id>', methods=['GET', 'POST'])
 @login_required
 def edit_user(user_id):
+    if not current_user.has_permission('edit_user'):
+        flash('ユーザー編集権限がありません。', 'warning')
+        abort(403)
+
     user = User.query.get_or_404(user_id)
-    if request.method == 'POST':
-        user.username = request.form['username']
-        user.email = request.form['email']
-        user.role = request.form['role']
+    form = EditUserForm(obj=user)
+
+    if form.validate_on_submit():
+        user.username = form.username.data
+        user.email = form.email.data
+        user.role = form.role.data
         db.session.commit()
+        flash('ユーザー情報を更新しました。', 'success')
         return redirect(url_for('admin.user_list'))
-    return render_template('admin/user_edit.html', user=user)
+
+    return render_template('admin/user_edit.html', form=form, user=user)
 
 @admin_bp.route('/users/delete/<int:user_id>', methods=['POST'])
 @login_required
 def delete_user(user_id):
+    if not current_user.has_permission('delete_user'):
+        flash('ユーザー削除権限がありません。', 'warning')
+        abort(403)
+
     user = User.query.get_or_404(user_id)
     db.session.delete(user)
     db.session.commit()
+    flash('ユーザーを削除しました。', 'success')
     return redirect(url_for('admin.user_list'))
 
 @admin_bp.route('/')
@@ -42,6 +59,10 @@ def admin_index():
 @admin_bp.route('/users/create', methods=['GET', 'POST'])
 @require_permission('create_user')
 def create_user():
+    if not current_user.has_permission('create_user'):
+        flash('ユーザー作成権限がありません。', 'warning')
+        abort(403)
+
     form = CreateUserForm()
     if form.validate_on_submit():
         new_user = User(

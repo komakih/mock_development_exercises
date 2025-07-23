@@ -10,25 +10,29 @@
 
         <!-- Main History Area -->
         <div class="col-md-10">
-        <!-- Navbar -->
+            <!-- Navbar -->
             {% include 'layout/navbar.html' %}
 
-            <!-- 履歴一覧の内容 -->
-            <div class="history-container border rounded p-4 shadow-sm" style="height:75vh; overflow-y:auto;">
-                <h1>チャット履歴一覧</h1>
-                <ul>
-                    {% for history in histories %}
-                        <li>
-                            <a href="{{ url_for('history.history_detail', history_id=history.id) }}">
-                                {{ history.created_at.strftime('%Y-%m-%d %H:%M') }} - {{ history.title }}
-                            </a>
-                            <form action="{{ url_for('history.history_delete', history_id=history.id) }}" method="POST" style="display:inline;">
-                                <button type="submit">削除</button>
-                            </form>
-                        </li>
-                    {% endfor %}
-                </ul>
-            </div>
+            {% if current_user.has_permission('view_history') %}
+                <div class="history-container border rounded p-4 shadow-sm" style="height:75vh; overflow-y:auto;">
+                    <h1>チャット履歴一覧</h1>
+                    <ul>
+                        {% for history in histories %}
+                            <li>
+                                <a href="{{ url_for('history.history_detail', history_id=history.id) }}">
+                                    {{ history.created_at.strftime('%Y-%m-%d %H:%M') }} - {{ history.title }}
+                                </a>
+                                <!-- 削除ボタン（Adminのみ） -->
+                                <form action="{{ url_for('history.history_delete', history_id=history.id) }}" method="POST" style="display:inline;">
+                                    <button class="btn btn-danger btn-sm" {% if not current_user.has_permission('delete_history') %}disabled{% endif %}>削除</button>
+                                </form>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% else %}
+                <div class="alert alert-warning">閲覧権限がありません。</div>
+            {% endif %}
         </div>
     </div>
 </div>

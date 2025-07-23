@@ -1,5 +1,5 @@
-from flask import Blueprint, render_template, redirect, url_for, request, flash
-from flask_login import login_required
+from flask import Blueprint, render_template, redirect, url_for, request, flash, abort
+from flask_login import login_required, current_user
 from app.models import User, db
 from app.modules.auth.auth import require_permission
 from app.modules.admin.forms import CreateUserForm
@@ -11,6 +11,10 @@ admin_bp = Blueprint('admin', __name__, template_folder='templates', url_prefix=
 @admin_bp.route('/users')
 @login_required
 def user_list():
+    if not current_user.has_permission('user_list'):
+        flash('ユーザー一覧閲覧権限がありません。', 'warning')
+        abort(403)
+
     users = User.query.all()
     return render_template('admin/user_list.html', users=users)
 

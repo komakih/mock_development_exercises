@@ -1,6 +1,7 @@
-from flask import Blueprint, render_template, redirect, url_for, flash
+from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_user, logout_user, login_required
 from werkzeug.security import generate_password_hash
+from app.modules.logging.log_manager import log_login_attempt
 from app.forms import LoginForm, RegisterForm
 from app.models import User, db, Role
 
@@ -12,14 +13,26 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
-        if user and user.check_password(form.password.data):
+        success = user and user.check_password(form.password.data)
+
+        if success:
             login_user(user)
             flash('ログインに成功しました。', 'success')
-            return redirect(url_for('chat.index'))
         else:
             flash('メールアドレスまたはパスワードが正しくありません。', 'danger')
-    return render_template('auth/login.html', form=form)
 
+        log_login_attempt(
+            user_id=user.id if user else None,
+            email=form.email.data,
+            success=success,
+            ip_address=request.remote_addr,
+            user_agent=request.user_agent.string
+        )
+
+        if success:
+            return redirect(url_for('chat.index'))
+
+    return render_template('auth/login.html', form=form)
 
 @auth_bp.route('/logout')
 @login_required

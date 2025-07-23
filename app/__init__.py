@@ -8,18 +8,6 @@ import os
 db = SQLAlchemy()
 login_manager = LoginManager()
 
-# 必要なインポートを追加
-from app.models import User
-from app.modules.auth.routes import auth_bp
-from app.modules.profile.routes import profile_bp
-from app.modules.admin.routes import admin_bp
-from app.modules.chat.routes import chat_bp
-from app.modules.faq.routes import faq_bp
-from app.modules.history.routes import history_bp
-from app.modules.errors.errors import errors_bp
-from app.modules.routes.index_update import index_bp
-from app.modules.main.routes import main_bp
-
 def create_app():
     app = Flask(__name__)
 
@@ -40,6 +28,18 @@ def create_app():
         return User.query.get(int(user_id))
 
     migrate = Migrate(app, db)
+
+    # 必要なインポートを追加
+    from app.models import User
+    from app.modules.auth.routes import auth_bp
+    from app.modules.profile.routes import profile_bp
+    from app.modules.admin.routes import admin_bp
+    from app.modules.chat.routes import chat_bp
+    from app.modules.faq.routes import faq_bp
+    from app.modules.history.routes import history_bp
+    from app.modules.errors.errors import errors_bp
+    from app.modules.routes.index_update import index_bp
+    from app.modules.main.routes import main_bp
 
     # Blueprint登録
     app.register_blueprint(auth_bp, url_prefix='/auth')

@@ -7,3 +7,8 @@ class CreateUserForm(FlaskForm):
     email = StringField('メールアドレス', validators=[DataRequired(), Email()])
     password = PasswordField('パスワード', validators=[DataRequired(), Length(min=6)])
     submit = SubmitField('ユーザー作成')
+
+class EditUserForm(FlaskForm):
+    username = StringField('ユーザー名', validators=[DataRequired()])
+    email = StringField('メールアドレス', validators=[DataRequired(), Email()])
+    submit = SubmitField('更新')    

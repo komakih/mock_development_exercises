@@ -41,9 +41,14 @@ def edit_user(user_id):
 @admin_bp.route('/users/delete/<int:user_id>', methods=['POST'])
 @login_required
 def delete_user(user_id):
+    if not current_user.has_permission('delete_user'):
+        flash('ユーザー削除権限がありません。', 'warning')
+        abort(403)
+
     user = User.query.get_or_404(user_id)
     db.session.delete(user)
     db.session.commit()
+    flash('ユーザーを削除しました。', 'success')
     return redirect(url_for('admin.user_list'))
 
 @admin_bp.route('/')

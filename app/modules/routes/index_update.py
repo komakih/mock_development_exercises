@@ -1,10 +1,16 @@
-from flask import Blueprint, render_template, request, flash, redirect, url_for
+from flask import Blueprint, render_template, request, flash, redirect, url_for, abort
+from flask_login import current_user, login_required
 from .index_manager import IndexManager
 
 index_bp = Blueprint('index_update', __name__, template_folder='templates/routes')
 
 @index_bp.route('/update_index', methods=['GET', 'POST'])
+@login_required
 def index():
+    if not current_user.has_permission('index_ignite'):
+        flash('インデックス更新権限がありません。', 'warning')
+        abort(403)
+
     if request.method == 'POST':
         result = IndexManager.update_index()
         if result['success']:

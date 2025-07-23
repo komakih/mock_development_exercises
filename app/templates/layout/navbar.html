@@ -24,9 +24,11 @@
         </li>
         {% endif %}
 
+        {% if current_user.has_permission('index_ignite') %}
         <li class="nav-item">
           <a class="nav-link" href="{{ url_for('index_update.index') }}">インデックス更新</a>
         </li>
+        {% endif %}
       </ul>
     </div>
   </div>

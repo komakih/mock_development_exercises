@@ -46,6 +46,10 @@ def admin_index():
 @admin_bp.route('/users/create', methods=['GET', 'POST'])
 @require_permission('create_user')
 def create_user():
+    if not current_user.has_permission('create_user'):
+        flash('ユーザー作成権限がありません。', 'warning')
+        abort(403)
+
     form = CreateUserForm()
     if form.validate_on_submit():
         new_user = User(

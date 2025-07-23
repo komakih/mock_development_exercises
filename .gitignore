@@ -12,3 +12,4 @@ data/document_collection/
 logs/
 *.log
 node_modules/
+*.db

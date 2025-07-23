@@ -2,28 +2,33 @@
 
 {% block content %}
 <div class="container-fluid">
-  <div class="row">
-    <!-- Sidebar -->
-    <div class="col-md-2 bg-light sidebar py-4">
-      {% include 'layout/sidebar.html' %}
-    </div>
+    <div class="row">
+        <div class="col-md-2 bg-light sidebar py-4">
+            {% include 'layout/sidebar.html' %}
+        </div>
 
-    <!-- Main FAQ Area -->
-    <div class="col-md-10">
-      <!-- Navbar -->
-      {% include 'layout/navbar.html' %}
+        <div class="col-md-10">
+            {% include 'layout/navbar.html' %}
 
-      <!-- FAQ Content -->
-            <h2 class="mb-4">FAQチャット</h2>
-            <div id="chat-area" class="border rounded p-3 mb-3" style="height:400px; overflow:auto;">
-                <!-- チャット内容がここに表示されます -->
+            <div id="chat-history" class="chat-container border rounded p-4 shadow-sm" style="height:70vh; overflow-y:auto;">
+                {% if messages %}
+                    {% for msg in messages %}
+                        <div class="d-flex {% if msg.role == 'user' %}justify-content-end{% else %}justify-content-start{% endif %}">
+                            <div class="alert {% if msg.role == 'user' %}alert-primary{% else %}alert-secondary{% endif %}" style="max-width:70%;">
+                                {{ msg.content }}
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div id="no-message" class="text-muted">メッセージはまだありません。</div>
+                {% endif %}
             </div>
-            <form id="chat-form">
-                <div class="input-group">
-                    <input type="text" class="form-control" id="user-input" placeholder="質問を入力してください">
-                    <button class="btn btn-primary" type="submit">送信</button>
-                </div>
-            </form>
+
+            <div class="input-group mt-3">
+                <input type="text" id="user-input" class="form-control" placeholder="質問を入力してください...">
+                <button class="btn btn-primary" id="send-btn">送信</button>
+                <button class="btn btn-outline-danger" id="reset-btn">リセット</button>
+            </div>
         </div>
     </div>
 </div>

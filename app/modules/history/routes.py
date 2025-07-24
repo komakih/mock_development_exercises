@@ -5,6 +5,16 @@ from app.modules.history.history_query import (
 )
 from app.modules.logging.security_audit_logger import log_security_event
 
+import logging
+from app.modules.utils.slack_log_handler import SlackLogHandler
+
+# セキュリティ監査ロガーの設定（security_audit専用）
+security_logger = logging.getLogger('security_audit')
+slack_handler = SlackLogHandler()
+slack_handler.setLevel(logging.INFO)
+slack_handler.setFormatter(logging.Formatter('%(asctime)s | %(levelname)s | %(name)s | %(message)s'))
+security_logger.addHandler(slack_handler)
+
 history_bp = Blueprint('history', __name__, template_folder='templates')
 
 @history_bp.route('/histories', methods=['GET'])

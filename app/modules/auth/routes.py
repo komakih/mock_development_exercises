@@ -6,6 +6,17 @@ from app.modules.logging.security_audit_logger import log_security_event
 from app.forms import LoginForm, RegisterForm
 from app.models import User, db, Role
 
+import logging
+from app.modules.utils.slack_log_handler import SlackLogHandler
+
+# セキュリティ監査ロガーの設定（security_audit専用）
+security_logger = logging.getLogger('security_audit')
+slack_handler = SlackLogHandler()
+slack_handler.setLevel(logging.INFO)
+slack_handler.setFormatter(logging.Formatter('%(asctime)s | %(levelname)s | %(name)s | %(message)s'))
+security_logger.addHandler(slack_handler)
+
+
 # Blueprintを作成（モジュール名を指定）
 auth_bp = Blueprint('auth', __name__, template_folder='templates')
 

@@ -30,7 +30,7 @@ def summarize_and_notify(app):
         prompt = "以下のログを運用チーム向けに簡潔に要約してください:\n" + "\n".join(logs)
 
         try:
-            summary, _ = get_chatgpt_response("log_summary", [
+            summary, _ = get_chatgpt_response(0, [
                 {"role": "system", "content": "あなたはインフラ監視用の要約AIです。"},
                 {"role": "user", "content": prompt}
             ])

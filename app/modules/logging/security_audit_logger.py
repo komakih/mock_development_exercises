@@ -2,6 +2,16 @@ import logging, json, os
 from datetime import datetime
 from app.modules.utils.slack_notifier import send_slack_message
 
+import logging
+from app.modules.utils.slack_log_handler import SlackLogHandler
+
+# セキュリティ監査ロガーの設定（security_audit専用）
+security_logger = logging.getLogger('security_audit')
+slack_handler = SlackLogHandler()
+slack_handler.setLevel(logging.INFO)
+slack_handler.setFormatter(logging.Formatter('%(asctime)s | %(levelname)s | %(name)s | %(message)s'))
+security_logger.addHandler(slack_handler)
+
 basedir = os.path.abspath(os.path.dirname(__file__))
 log_dir = os.path.abspath(os.path.join(basedir, '../../../logs'))
 os.makedirs(log_dir, exist_ok=True)

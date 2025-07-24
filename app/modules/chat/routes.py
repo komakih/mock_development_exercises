@@ -40,13 +40,13 @@ def index():
             assistant_response = rag_response
             source_details = source_info
         else:
-            assistant_response, source = get_chatgpt_response(session['messages'])
+            assistant_response, source = get_chatgpt_response(current_user.id, session['messages'])
             log_no_result_search(current_user.id, user_message)
             source_details = None
 
         session['messages'].append({'role': 'assistant', 'content': assistant_response})
 
-        title = generate_thread_title(user_message)
+        title = generate_thread_title(current_user.id, user_message)
         save_chat_history(user_message, assistant_response, title=title)
 
         session.modified = True

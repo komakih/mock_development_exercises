@@ -32,7 +32,7 @@ def perform_vector_search(user_id, query, similarity_threshold=0.80):
 
         # 必要に応じて翻訳
         if not is_japanese(response.response):
-            translated_response, _ = get_chatgpt_response([
+            translated_response, _ = get_chatgpt_response(user_id, [
                 {"role": "system", "content": "以下の英文を日本語に翻訳してください。"},
                 {"role": "user", "content": response.response}
             ])

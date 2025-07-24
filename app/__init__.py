@@ -2,9 +2,9 @@ from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_migrate import Migrate
-import os
+from app.modules.utils.slack_log_handler import SlackLogHandler
+import os, logging, atexit
 
-# DBおよびLoginManagerのインスタンス生成
 db = SQLAlchemy()
 login_manager = LoginManager()
 
@@ -56,6 +56,13 @@ def create_app():
     with app.app_context():
         db.create_all()
 
+    # バッファ付きSlack通知スケジューラ起動（新規追加）
+    from app.modules.utils.buffered_slack_notifier import start_scheduler
+    scheduler = start_scheduler(app)
+
+    # 終了時のスケジューラーシャットダウン（atexit利用）
+    atexit.register(lambda: scheduler.shutdown())
+
     # グローバルエラーハンドリング（例外処理）
     @app.errorhandler(Exception)
     def handle_exception(e):
@@ -66,8 +73,8 @@ def create_app():
     # 既存の特定エラーハンドリング（403）
     @app.errorhandler(403)
     def forbidden(e):
-        from app.modules.logging.error_logger import log_error  # 任意追加（403も記録したい場合）
-        log_error(e)  # 任意追加（403も記録したい場合）
+        from app.modules.logging.error_logger import log_error
+        log_error(e)
         return render_template('errors/403.html'), 403
 
     @app.route('/trigger-error')
@@ -77,5 +84,10 @@ def create_app():
     @app.route('/')
     def index():
         return 'Hello, HTTPS!'
+
+    slack_handler = SlackLogHandler()
+    slack_handler.setLevel(logging.ERROR)
+    slack_handler.setFormatter(logging.Formatter('%(asctime)s | %(levelname)s | %(name)s | %(message)s'))
+    logging.getLogger().addHandler(slack_handler)
 
     return app

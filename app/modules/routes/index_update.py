@@ -3,6 +3,16 @@ from flask_login import current_user, login_required
 from .index_manager import IndexManager
 from app.modules.logging.security_audit_logger import log_security_event
 
+import logging
+from app.modules.utils.slack_log_handler import SlackLogHandler
+
+# セキュリティ監査ロガーの設定（security_audit専用）
+security_logger = logging.getLogger('security_audit')
+slack_handler = SlackLogHandler()
+slack_handler.setLevel(logging.INFO)
+slack_handler.setFormatter(logging.Formatter('%(asctime)s | %(levelname)s | %(name)s | %(message)s'))
+security_logger.addHandler(slack_handler)
+
 index_bp = Blueprint('index_update', __name__, template_folder='templates/routes')
 
 @index_bp.route('/update_index', methods=['GET', 'POST'])

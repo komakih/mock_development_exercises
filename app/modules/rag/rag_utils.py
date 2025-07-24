@@ -42,7 +42,7 @@ def perform_vector_search(user_id, query, similarity_threshold=0.85):
             return translated_response.replace('\n', '<br>'), source_info  # ここも改行適用
 
         # RAGのレスポンスも改行を適用するように修正
-        return response.response.replace('\n', '<br>'), source_info
+        return response.response.strip().replace('\n', '<br>'), source_info
     else:
         log_no_result_search(user_id, query)
         external_response, _ = get_chatgpt_response(user_id, [

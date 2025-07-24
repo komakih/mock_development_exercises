@@ -25,25 +25,28 @@
       {% endwith %}
 
       <!-- Chat Messages -->
-        <div class="chat-container border rounded p-4 shadow-sm" style="height:75vh; overflow-y:auto;">
-          {% if session['messages'] %}
-            {% for msg in session['messages'] %}
-              <div class="alert {% if msg.role == 'user' %}alert-primary text-end ms-auto{% else %}alert-secondary text-start me-auto{% endif %}" 
-                  style="
-                    max-width: {% if msg.role == 'user' %}60%{% else %}70%{% endif %}; 
-                    width: fit-content; 
-                    word-wrap: break-word; 
-                    white-space: pre-wrap; 
-                    overflow-wrap: break-word;
-                    margin-bottom: 10px;
-                  ">
-                {{ msg.content.strip().replace('\n', '<br>') | safe }}
-              </div>
-            {% endfor %}
-          {% else %}
-            <div class="text-muted">メッセージはまだありません。</div>
-          {% endif %}
-        </div>
+      <div class="chat-container border rounded p-4 shadow-sm" style="height:75vh; overflow-y:auto;">
+        {% if session['messages'] %}
+          {% for msg in session['messages'] %}
+            <div class="alert {% if msg.role == 'user' %}alert-primary text-end ms-auto{% else %}alert-secondary text-start me-auto{% endif %}" 
+                style="
+                  max-width:{% if msg.role == 'user' %}60%{% else %}70%{% endif %};
+                  width: fit-content;
+                  word-wrap: break-word;
+                  overflow-wrap: break-word;
+                  margin-bottom: 10px;
+                  white-space: normal;
+                ">
+              {% autoescape false %}
+                {{ msg.content.strip().replace('\n', '<br>') }}
+              {% endautoescape %}
+            </div>
+          {% endfor %}
+        {% else %}
+          <div class="text-muted">メッセージはまだありません。</div>
+        {% endif %}
+      </div>
+
 
       <!-- 参照元表示 -->
       {% if source_details %}

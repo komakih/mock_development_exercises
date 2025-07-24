@@ -25,19 +25,27 @@
       {% endwith %}
 
       <!-- Chat Messages -->
-      <div class="chat-container border rounded p-4 shadow-sm" style="height:75vh; overflow-y:auto;">
-        {% if session['messages'] %}
-          {% for msg in session['messages'] %}
-            <div class="alert {% if msg.role == 'user' %}alert-primary text-end ms-auto{% else %}alert-secondary text-start me-auto{% endif %}" style="width:70%;">
-              {{ msg.content }}
-            </div>
-          {% endfor %}
-        {% else %}
-          <div class="text-muted">メッセージはまだありません。</div>
-        {% endif %}
-      </div>
+        <div class="chat-container border rounded p-4 shadow-sm" style="height:75vh; overflow-y:auto;">
+          {% if session['messages'] %}
+            {% for msg in session['messages'] %}
+              <div class="alert {% if msg.role == 'user' %}alert-primary text-end ms-auto{% else %}alert-secondary text-start me-auto{% endif %}" 
+                  style="
+                    max-width: {% if msg.role == 'user' %}60%{% else %}70%{% endif %}; 
+                    width: fit-content; 
+                    word-wrap: break-word; 
+                    white-space: pre-wrap; 
+                    overflow-wrap: break-word;
+                    margin-bottom: 10px;
+                  ">
+                {{ msg.content.strip().replace('\n', '<br>') | safe }}
+              </div>
+            {% endfor %}
+          {% else %}
+            <div class="text-muted">メッセージはまだありません。</div>
+          {% endif %}
+        </div>
 
-      <!-- ↓↓↓ ここに追加 ↓↓↓ -->
+      <!-- 参照元表示 -->
       {% if source_details %}
         <div class="alert alert-info mt-2">
           <strong>参照元：</strong>
@@ -46,7 +54,6 @@
           {% endfor %}
         </div>
       {% endif %}
-      <!-- ↑↑↑ ここまで ↑↑↑ -->
 
       <!-- Chat Input -->
       <form method="POST" action="{{ url_for('chat.index') }}" class="mt-3">

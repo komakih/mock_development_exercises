@@ -5,7 +5,7 @@ from app.openai_utils import get_chatgpt_response
 documents = SimpleDirectoryReader("data/docs").load_data()
 index = VectorStoreIndex.from_documents(documents)
 
-def perform_vector_search(user_id, query, similarity_threshold=0.80):
+def perform_vector_search(user_id, query, similarity_threshold=0.85):
     query_engine = index.as_query_engine(response_mode='compact', similarity_top_k=1)
     response = query_engine.query(query)
 
@@ -15,10 +15,8 @@ def perform_vector_search(user_id, query, similarity_threshold=0.80):
             "similarity": node.score
         } for node in response.source_nodes]
 
-        # 類似度が閾値を超えるかで判断
-        matched = source_info[0]['similarity'] >= similarity_threshold
+        matched = float(source_info[0]['similarity']) >= float(similarity_threshold)
 
-        # 常にログを記録する（ヒットしたかどうかも記録）
         log_search_result(
             user_id=user_id,
             query=query,
@@ -28,26 +26,32 @@ def perform_vector_search(user_id, query, similarity_threshold=0.80):
         )
 
         if not matched:
-            return None, None
+            external_response, _ = get_chatgpt_response(user_id, [
+                {"role": "user", "content": query}
+            ])
+            fixed_response = (
+                "マニュアルに該当する情報がありませんので外部からの検索結果を返答します:\n" + external_response
+            ).replace('\n', '<br>')  # ここで改行適用
+            return fixed_response, source_info
 
-        # 必要に応じて翻訳
         if not is_japanese(response.response):
             translated_response, _ = get_chatgpt_response(user_id, [
                 {"role": "system", "content": "以下の英文を日本語に翻訳してください。"},
                 {"role": "user", "content": response.response}
             ])
-            return translated_response, source_info
+            return translated_response.replace('\n', '<br>'), source_info  # ここも改行適用
 
-        return response.response, source_info
+        # RAGのレスポンスも改行を適用するように修正
+        return response.response.replace('\n', '<br>'), source_info
     else:
-        log_search_result(
-            user_id=user_id,
-            query=query,
-            result="該当なし",
-            similarity=0.0,
-            matched=False
-        )
-        return None, None
+        log_no_result_search(user_id, query)
+        external_response, _ = get_chatgpt_response(user_id, [
+            {"role": "user", "content": query}
+        ])
+        fixed_response = (
+            "マニュアルに該当する情報がありませんので外部からの検索結果を返答します:\n" + external_response
+        ).replace('\n', '<br>')  # ここも改行適用
+        return fixed_response, None
 
 def is_japanese(text):
     for ch in text:

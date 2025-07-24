@@ -1,5 +1,6 @@
 import logging, json, os
 from datetime import datetime
+from app.modules.utils.slack_notifier import send_slack_message
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 log_dir = os.path.abspath(os.path.join(basedir, '../../../logs'))
@@ -23,3 +24,13 @@ def log_security_event(operator_id, action, resource_id, details=None):
         "details": details if details else ""
     }
     logger.info(json.dumps(log_data, ensure_ascii=False))
+    try:
+        text = (
+            f"✅ セキュリティログ: {action}\n"
+            f"📌 実行者: user_id={operator_id}\n"
+            f"🔗 対象ID: {resource_id}\n"
+            f"📝 詳細: {details}"
+        )
+        send_slack_message(text)
+    except Exception as e:
+        print("Slack通知失敗:", e)

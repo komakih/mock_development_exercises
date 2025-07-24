@@ -56,8 +56,18 @@ def create_app():
     with app.app_context():
         db.create_all()
 
+    # グローバルエラーハンドリング（例外処理）
+    @app.errorhandler(Exception)
+    def handle_exception(e):
+        from app.modules.logging.error_logger import log_error
+        log_error(e)
+        return render_template("errors/500.html"), 500
+
+    # 既存の特定エラーハンドリング（403）
     @app.errorhandler(403)
     def forbidden(e):
+        from app.modules.logging.error_logger import log_error  # 任意追加（403も記録したい場合）
+        log_error(e)  # 任意追加（403も記録したい場合）
         return render_template('errors/403.html'), 403
 
     @app.route('/trigger-error')

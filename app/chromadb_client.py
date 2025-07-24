@@ -1,27 +1,39 @@
-import chromadb
-import os
+import chromadb, os
+import time
 from openai import OpenAI
+from app.modules.logging.llm_request_logger import log_llm_request  # 追加
 
-# ChromaDBクライアントの設定（絶対パス）
 db_path = os.path.abspath("./data/document_collection")
 client = chromadb.PersistentClient(path=db_path)
 collection = client.get_collection("document_collection")
 
 openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-def chromadb_query(query_text):
-    embedding = openai_client.embeddings.create(
-        input=query_text,
-        model="text-embedding-3-small"
-    ).data[0].embedding
+def chromadb_query(user_id, query_text):
+    start_time = time.time()
+    try:
+        response = openai_client.embeddings.create(
+            input=query_text,
+            model="text-embedding-3-small"
+        )
+        response_time = time.time() - start_time
+        token_count = response.usage.total_tokens
+        embedding = response.data[0].embedding
 
-    results = collection.query(
-        query_embeddings=[embedding],
-        n_results=1,
-        include=["distances", "documents"]
-    )
+        log_llm_request(user_id, request_content=query_text, response_time=response_time, token_count=token_count)
 
-    if results and results['documents'] and results['documents'][0]:
-        return results['documents'][0][0], results['distances'][0][0]
-    else:
-        return None, 0
+        results = collection.query(
+            query_embeddings=[embedding],
+            n_results=1,
+            include=["distances", "documents"]
+        )
+
+        if results and results['documents'] and results['documents'][0]:
+            return results['documents'][0][0], results['distances'][0][0]
+        else:
+            return None, 0
+
+    except Exception as e:
+        response_time = time.time() - start_time
+        log_llm_request(user_id, request_content=query_text, response_time=response_time, token_count=0, api_error=e)
+        raise e

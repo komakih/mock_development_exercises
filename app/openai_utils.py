@@ -1,18 +1,20 @@
-import os
+import os, time
 from openai import OpenAI
 from app.chromadb_client import chromadb_query
+from app.modules.logging.llm_request_logger import log_llm_request  # 追加
 
 openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # RAG使用を判断する条件を設定（類似度スコアで判断）
-def should_use_rag(query, threshold=0.98):
-    result, score = chromadb_query(query)
+def should_use_rag(user_id, query, threshold=0.9):
+    result, score = chromadb_query(user_id, query)
     return score >= threshold, result
 
 # ChatGPTまたはRAGを使用して応答を取得
-def get_chatgpt_response(messages):
+def get_chatgpt_response(user_id, messages):
+    start_time = time.time()  # 開始時刻を記録
     last_message = messages[-1]['content']
-    use_rag, rag_info = should_use_rag(last_message)
+    use_rag, rag_info = should_use_rag(user_id, last_message)
 
     if use_rag:
         source = "RAG"
@@ -20,30 +22,45 @@ def get_chatgpt_response(messages):
     else:
         source = "GPT"
 
-    response = openai_client.chat.completions.create(
-        model="gpt-4.1",
-        messages=messages
-    ).choices[0].message.content
+    try:
+        response = openai_client.chat.completions.create(
+            model="gpt-4.1",
+            messages=messages
+        )
+        response_time = time.time() - start_time  # レスポンスタイムを計算
+        token_count = response.usage.total_tokens
 
-    return response, source
+        # ログ記録を追加
+        log_llm_request(user_id, request_content=messages, response_time=response_time, token_count=token_count)
 
-def generate_thread_title(content):
-    response = openai_client.chat.completions.create(
-        model="gpt-4",
-        messages=[
-            {"role": "system", "content": "以下のメッセージから短いタイトルを生成してください。"},
-            {"role": "user", "content": content}
-        ]
-    )
-    return response.choices[0].message.content.strip()
+        return response.choices[0].message.content, source
 
-def generate_thread_title(content):
-    response = openai_client.chat.completions.create(
-        model="gpt-4",
-        messages=[
-            {"role": "system", "content": "以下の内容から15文字以内で簡潔なタイトルを生成してください。"},
-            {"role": "user", "content": content}
-        ]
-    )
-    title = response.choices[0].message.content.strip()
-    return title
+    except Exception as e:
+        response_time = time.time() - start_time
+        log_llm_request(user_id, request_content=messages, response_time=response_time, token_count=0, api_error=e)
+        raise e
+
+# スレッドタイトルを生成する関数
+def generate_thread_title(user_id, content):
+    start_time = time.time()
+    try:
+        response = openai_client.chat.completions.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": "以下の内容から15文字以内で簡潔なタイトルを生成してください。"},
+                {"role": "user", "content": content}
+            ]
+        )
+        response_time = time.time() - start_time
+        token_count = response.usage.total_tokens
+
+        # ログ記録を追加
+        log_llm_request(user_id, request_content=content, response_time=response_time, token_count=token_count)
+
+        title = response.choices[0].message.content.strip()
+        return title
+
+    except Exception as e:
+        response_time = time.time() - start_time
+        log_llm_request(user_id, request_content=content, response_time=response_time, token_count=0, api_error=e)
+        raise e

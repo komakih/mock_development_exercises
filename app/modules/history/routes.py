@@ -3,6 +3,7 @@ from flask_login import login_required, current_user
 from app.modules.history.history_query import (
     get_chat_histories, get_chat_history_detail, delete_chat_history
 )
+from app.modules.logging.security_audit_logger import log_security_event
 
 history_bp = Blueprint('history', __name__, template_folder='templates')
 
@@ -36,5 +37,14 @@ def history_delete(history_id):
         abort(403)
 
     delete_chat_history(history_id)
+
+    # セキュリティ監査ログ追加（履歴削除）
+    log_security_event(
+        operator_id=current_user.id,
+        action="履歴削除",
+        resource_id=history_id,
+        details=f"ユーザー{current_user.email}が履歴{history_id}を削除しました。"
+    )
+
     flash('履歴を削除しました。', 'success')
     return redirect(url_for('history.history_list'))

@@ -3,6 +3,7 @@ from flask_login import login_required, current_user
 from app.models import User, db
 from app.modules.auth.auth import require_permission
 from app.modules.admin.forms import CreateUserForm, EditUserForm
+from app.modules.logging.security_audit_logger import log_security_event
 from app.database import db
 
 # Blueprintを作成（モジュール名を指定）
@@ -33,6 +34,15 @@ def edit_user(user_id):
         user.email = form.email.data
         user.role = form.role.data
         db.session.commit()
+
+        # セキュリティ監査ログ追加（ユーザー情報更新）
+        log_security_event(
+            operator_id=current_user.id,
+            action="ユーザー情報更新",
+            resource_id=user.id,
+            details=f"ユーザー{user.email}の情報が更新されました。"
+        )
+
         flash('ユーザー情報を更新しました。', 'success')
         return redirect(url_for('admin.user_list'))
 
@@ -46,15 +56,25 @@ def delete_user(user_id):
         abort(403)
 
     user = User.query.get_or_404(user_id)
+    user_email = user.email
     db.session.delete(user)
     db.session.commit()
+
+    # セキュリティ監査ログ追加（ユーザー削除）
+    log_security_event(
+        operator_id=current_user.id,
+        action="ユーザー削除",
+        resource_id=user_id,
+        details=f"ユーザー{user_email}を削除しました。"
+    )
+
     flash('ユーザーを削除しました。', 'success')
     return redirect(url_for('admin.user_list'))
 
 @admin_bp.route('/')
 @require_permission('create_user')
 def admin_index():
-    return render_template('admin/index.html')
+    return render_template('admin/user_list.html')
 
 @admin_bp.route('/users/create', methods=['GET', 'POST'])
 @require_permission('create_user')
@@ -72,7 +92,16 @@ def create_user():
         new_user.set_password(form.password.data)
         db.session.add(new_user)
         db.session.commit()
+
+        # セキュリティ監査ログ追加（ユーザー作成）
+        log_security_event(
+            operator_id=current_user.id,
+            action="ユーザーアカウント作成",
+            resource_id=new_user.id,
+            details=f"ユーザー{new_user.email}のアカウントを作成しました。"
+        )
+
         flash('新しいユーザーを作成しました。', 'success')
-        return redirect(url_for('admin.admin_index'))
+        return redirect(url_for('admin.user_list'))
 
     return render_template('admin/user_create.html', form=form)

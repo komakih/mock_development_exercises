@@ -8,18 +8,6 @@ import os
 db = SQLAlchemy()
 login_manager = LoginManager()
 
-# 必要なインポートを追加
-from app.models import User
-from app.modules.auth.routes import auth_bp
-from app.modules.profile.routes import profile_bp
-from app.modules.admin.routes import admin_bp
-from app.modules.chat.routes import chat_bp
-from app.modules.faq.routes import faq_bp
-from app.modules.history.routes import history_bp
-from app.modules.errors.errors import errors_bp
-from app.modules.routes.index_update import index_bp
-from app.modules.main.routes import main_bp
-
 def create_app():
     app = Flask(__name__)
 
@@ -41,6 +29,18 @@ def create_app():
 
     migrate = Migrate(app, db)
 
+    # 必要なインポートを追加
+    from app.models import User
+    from app.modules.auth.routes import auth_bp
+    from app.modules.profile.routes import profile_bp
+    from app.modules.admin.routes import admin_bp
+    from app.modules.chat.routes import chat_bp
+    from app.modules.faq.routes import faq_bp
+    from app.modules.history.routes import history_bp
+    from app.modules.errors.errors import errors_bp
+    from app.modules.routes.index_update import index_bp
+    from app.modules.main.routes import main_bp
+
     # Blueprint登録
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(profile_bp, url_prefix='/profile')
@@ -56,8 +56,18 @@ def create_app():
     with app.app_context():
         db.create_all()
 
+    # グローバルエラーハンドリング（例外処理）
+    @app.errorhandler(Exception)
+    def handle_exception(e):
+        from app.modules.logging.error_logger import log_error
+        log_error(e)
+        return render_template("errors/500.html"), 500
+
+    # 既存の特定エラーハンドリング（403）
     @app.errorhandler(403)
     def forbidden(e):
+        from app.modules.logging.error_logger import log_error  # 任意追加（403も記録したい場合）
+        log_error(e)  # 任意追加（403も記録したい場合）
         return render_template('errors/403.html'), 403
 
     @app.route('/trigger-error')

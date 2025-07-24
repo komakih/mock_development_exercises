@@ -1,6 +1,8 @@
-from flask import Blueprint, render_template, redirect, url_for, flash
-from flask_login import login_user, logout_user, login_required
+from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash
+from app.modules.logging.log_manager import log_login_attempt
+from app.modules.logging.security_audit_logger import log_security_event
 from app.forms import LoginForm, RegisterForm
 from app.models import User, db, Role
 
@@ -12,19 +14,47 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
-        if user and user.check_password(form.password.data):
+        success = user and user.check_password(form.password.data)
+
+        if success:
             login_user(user)
+            # セキュリティ監査ログ追加（ログイン成功）
+            log_security_event(
+                operator_id=user.id,
+                action="ユーザーログイン",
+                resource_id=user.id,
+                details=f"ユーザー{user.email}がログインしました。"
+            )
             flash('ログインに成功しました。', 'success')
             return redirect(url_for('chat.index'))
         else:
             flash('メールアドレスまたはパスワードが正しくありません。', 'danger')
-    return render_template('auth/login.html', form=form)
 
+        log_login_attempt(
+            user_id=user.id if user else None,
+            email=form.email.data,
+            success=success,
+            ip_address=request.remote_addr,
+            user_agent=request.user_agent.string
+        )
+
+    return render_template('auth/login.html', form=form)
 
 @auth_bp.route('/logout')
 @login_required
 def logout():
+    user_id = current_user.id
+    email = current_user.email
     logout_user()
+
+    # セキュリティ監査ログ追加（ログアウト成功）
+    log_security_event(
+        operator_id=user_id,
+        action="ユーザーログアウト",
+        resource_id=user_id,
+        details=f"ユーザー{email}がログアウトしました。"
+    )
+
     flash('ログアウトしました。', 'info')
     return redirect(url_for('auth.login'))
 
@@ -51,6 +81,14 @@ def register():
 
         db.session.add(new_user)
         db.session.commit()
+
+        # セキュリティ監査ログ追加（アカウント作成）
+        log_security_event(
+            operator_id=new_user.id,
+            action="ユーザーアカウント作成",
+            resource_id=new_user.id,
+            details=f"ユーザー{new_user.email}のアカウントが作成されました。"
+        )
 
         flash('アカウント登録に成功しました。ログインしてください。', 'success')
         return redirect(url_for('auth.login'))

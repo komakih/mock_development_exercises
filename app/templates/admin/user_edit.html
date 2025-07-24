@@ -18,15 +18,20 @@
                 <div class="container mt-5">
                     <h2 class="mb-4">ユーザー編集</h2>
                     <form method="post">
+                        {{ form.hidden_tag() }}
                         <div class="mb-3">
-                            <label for="username" class="form-label">ユーザー名</label>
-                            <input type="text" class="form-control" id="username" name="username" value="{{ user.username }}" required>
+                            {{ form.username.label(class_="form-label") }}
+                            {{ form.username(class_="form-control") }}
                         </div>
                         <div class="mb-3">
-                            <label for="email" class="form-label">メールアドレス</label>
-                            <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}" required>
+                            {{ form.email.label(class_="form-label") }}
+                            {{ form.email(class_="form-control") }}
                         </div>
-                        <button type="submit" class="btn btn-primary">更新</button>
+                        <div class="mb-3">
+                            {{ form.role.label(class_="form-label") }}
+                            {{ form.role(class_="form-select") }}
+                        </div>
+                        {{ form.submit(class_="btn btn-primary") }}
                         <a href="{{ url_for('admin.user_list') }}" class="btn btn-secondary">キャンセル</a>
                     </form>
                 </div>

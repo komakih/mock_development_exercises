@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash, abort
 from flask_login import login_required, current_user
-from app.models import User, db
+from app.models import User, db, Role
 from app.modules.auth.auth import require_permission
 from app.modules.admin.forms import CreateUserForm, EditUserForm
 from app.modules.logging.security_audit_logger import log_security_event
@@ -29,10 +29,20 @@ def edit_user(user_id):
     user = User.query.get_or_404(user_id)
     form = EditUserForm(obj=user)
 
+    all_roles = Role.query.filter(Role.name != 'Admin').all()
+    form.role.choices = [(str(r.id), r.name) for r in all_roles]
+
+    if request.method == 'GET':
+        form.username.data = user.username
+        form.email.data = user.email
+        form.role.data = [str(role.id) for role in user.roles]
+
     if form.validate_on_submit():
         user.username = form.username.data
         user.email = form.email.data
-        user.role = form.role.data
+        selected_role_ids = [int(rid) for rid in form.role.data]
+        selected_roles = Role.query.filter(Role.id.in_(selected_role_ids)).all()
+        user.roles = selected_roles
         db.session.commit()
 
         # セキュリティ監査ログ追加（ユーザー情報更新）

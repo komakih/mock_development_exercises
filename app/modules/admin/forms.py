@@ -1,5 +1,6 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField
+from wtforms import StringField, PasswordField, SubmitField, SelectMultipleField
+from wtforms.widgets import ListWidget, CheckboxInput
 from wtforms.validators import DataRequired, Email, Length
 
 class CreateUserForm(FlaskForm):
@@ -11,4 +12,10 @@ class CreateUserForm(FlaskForm):
 class EditUserForm(FlaskForm):
     username = StringField('ユーザー名', validators=[DataRequired()])
     email = StringField('メールアドレス', validators=[DataRequired(), Email()])
-    submit = SubmitField('更新')    
+    role = SelectMultipleField(
+        'ロール',
+        choices=[],  # 後でルート側でセットする
+        option_widget=CheckboxInput(),
+        widget=ListWidget(prefix_label=False)
+    )
+    submit = SubmitField('更新')

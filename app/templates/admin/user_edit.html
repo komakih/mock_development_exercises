@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-
+{% set page_title = "ユーザー編集" %}
 {% block content %}
 <div class="container-fluid">
     <div class="row">
@@ -16,7 +16,6 @@
             <!-- ユーザー編集の内容 -->
             <div class="user-edit-container border rounded p-4 shadow-sm" style="height:75vh; overflow-y:auto;">
                 <div class="container mt-5">
-                    <h2 class="mb-4">ユーザー編集</h2>
                     <form method="post">
                         {{ form.hidden_tag() }}
                         <div class="mb-3">

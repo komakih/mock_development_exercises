@@ -47,7 +47,14 @@ def generate_thread_title(user_id, content):
         response = openai_client.chat.completions.create(
             model="gpt-4",
             messages=[
-                {"role": "system", "content": "以下の内容から15文字以内で簡潔なタイトルを生成してください。"},
+                {"role": "system", "content": 
+                    "あなたは会話内容をタイトルに要約するAIです。"
+                    "以下のルールを厳密に守り、タイトルを生成してください。\n"
+                    "1. タイトルは絶対に記号（『』「」\"\"''など）で囲まない。\n"
+                    "2. タイトルは15文字以内で簡潔に表現する。\n"
+                    "3. 句読点を使わない。\n"
+                    "4. 名詞や動詞を中心としたシンプルな表現にする。"
+                },
                 {"role": "user", "content": content}
             ]
         )

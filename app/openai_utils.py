@@ -5,34 +5,39 @@ from app.modules.logging.llm_request_logger import log_llm_request  # 追加
 
 openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-# RAG使用を判断する条件を設定（類似度スコアで判断）
-def should_use_rag(user_id, query, threshold=0.9):
-    result, score = chromadb_query(user_id, query)
-    return score >= threshold, result
-
 # ChatGPTまたはRAGを使用して応答を取得
-def get_chatgpt_response(user_id, messages):
-    start_time = time.time()  # 開始時刻を記録
+def get_chatgpt_response(user_id, messages, use_rag_search=True):
+    start_time = time.time()
     last_message = messages[-1]['content']
-    use_rag, rag_info = should_use_rag(user_id, last_message)
 
-    if use_rag:
-        source = "RAG"
-        messages.append({"role": "system", "content": f"以下の情報を参考にして回答してください:\n{rag_info}"})
+    if use_rag_search:
+        rag_response, source_info = perform_vector_search(user_id, last_message)
+        if rag_response:
+            source = "RAG"
+            rag_prompt = (
+                "あなたは以下の参考情報をもとに質問に回答してください。\n"
+                "注意事項:\n"
+                "1. 参考情報の箇条書きは必ず箇条書きとして維持してください。\n"
+                "2. 改行は元の情報のまま絶対に変更せず再現してください。\n"
+                "3. 回答には追加の解説や文章を加えず、参考情報をそのまま提供してください。\n\n"
+                f"---参考情報---\n{rag_response}\n---ここまで---\n"
+            )
+            messages.append({"role": "system", "content": rag_prompt})
+        else:
+            source = "GPT"
     else:
         source = "GPT"
 
     try:
         response = openai_client.chat.completions.create(
             model="gpt-4.1",
-            messages=messages
+            messages=messages,
+            max_tokens=2048  # トークン数を明示的に指定
         )
-        response_time = time.time() - start_time  # レスポンスタイムを計算
+        response_time = time.time() - start_time
         token_count = response.usage.total_tokens
 
-        # ログ記録を追加
         log_llm_request(user_id, request_content=messages, response_time=response_time, token_count=token_count)
-
         return response.choices[0].message.content, source
 
     except Exception as e:

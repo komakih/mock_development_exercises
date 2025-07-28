@@ -4,12 +4,20 @@ from openai import OpenAI
 from app.modules.logging.llm_request_logger import log_llm_request  # 追加
 
 db_path = os.path.abspath("./data/document_collection")
-client = chromadb.PersistentClient(path=db_path)
-collection = client.get_collection("document_collection")
+# ChromaDBの初期化を環境変数で制御
+if not os.environ.get("SKIP_CHROMADB_INIT"):
+    client = chromadb.PersistentClient(path=db_path)
+    collection = client.get_collection("document_collection")
+else:
+    client = None
+    collection = None
 
 openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 def chromadb_query(user_id, query_text):
+    if not collection:
+        raise RuntimeError("ChromaDBは初期化されていません。")
+
     start_time = time.time()
     try:
         response = openai_client.embeddings.create(

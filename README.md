@@ -1,25 +1,3 @@
-リポジトリ構成を確認しました。このプロジェクトはFlaskベースで、モジュール構造も整理されており、次のような機能群を含んでいることがわかります：
-
----
-
-## 🔍 主な構成内容（推測）
-
-* `app/modules/chat/`: チャット機能
-* `app/modules/auth/`: 認証（ログイン）機能
-* `app/modules/admin/`: 管理機能
-* `app/modules/faq/`: FAQ検索機能
-* `app/chromadb_client.py`: ベクトルDB（ChromaDB）との接続
-* `app/openai_utils.py`: OpenAI API連携
-* `app/routes.py`: 各種ルーティング統括
-* `run.py`: アプリの起動スクリプト
-
----
-
-## ✅ これを元に作成する `README.md` の雛形
-
-以下は、今回の模擬開発プロジェクトに基づいて自動生成した `README.md` の下書きです：
-
-```markdown
 # 模擬開発：社内向け生成AIチャットアプリ
 
 本プロジェクトは、社内業務に生成AI（LLM）を活用するチャットボットアプリケーションの模擬開発演習です。FlaskベースのWebアプリとして実装され、OpenAI API、ChromaDB、LangChainなどを統合しています。
@@ -47,23 +25,23 @@
 
 ## 📁 ディレクトリ構成（抜粋）
 
-mock\_development\_exercises/
+```
+mock_development_exercises/
 ├── run.py                     # アプリ起動スクリプト
 ├── requirements.txt
 └── app/
-├── **init**.py
-├── routes.py
-├── database.py
-├── chromadb\_client.py
-├── openai\_utils.py
-└── modules/
-├── chat/
-├── auth/
-├── admin/
-├── faq/
-└── errors/
-
-````
+    ├── __init__.py
+    ├── routes.py
+    ├── database.py
+    ├── chromadb_client.py
+    ├── openai_utils.py
+    └── modules/
+        ├── chat/
+        ├── auth/
+        ├── admin/
+        ├── faq/
+        └── errors/
+```
 
 ## 🔧 セットアップ手順
 
@@ -77,13 +55,13 @@ pip install -r requirements.txt
 
 # アプリ起動
 python run.py
-````
+```
 
 ## 📌 補足
 
-* `.env`ファイルにOpenAI APIキー等の環境変数を設定してください。
-* 初期FAQや社内文書は `data/` フォルダに配置します（別途構築）。
-* RAGインデックスは自動または手動で再生成可能です。
+- `.env`ファイルにOpenAI APIキー等の環境変数を設定してください。
+- 初期FAQや社内文書は `data/` フォルダに配置します（別途構築）。
+- RAGインデックスは自動または手動で再生成可能です。
 
 ## 📄 ライセンス
 

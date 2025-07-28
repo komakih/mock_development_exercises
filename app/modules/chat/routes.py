@@ -6,7 +6,6 @@ from app.modules.rag.rag_utils import perform_vector_search
 from app.modules.logging.vector_search_logger import log_no_result_search
 from app.modules.logging.user_activity_logger import log_user_activity  # ←追加
 import uuid
-from datetime import datetime, timezone
 from app.models import db, ChatHistory
 
 chat_bp = Blueprint('chat', __name__, template_folder='templates')
@@ -44,19 +43,7 @@ def index():
         log_user_activity(current_user.id, action="質問送信", details=user_message)
 
         # チャット履歴をデータベースに保存（save_chat_history を再追加）
-        save_chat_history(user_message, assistant_response, title=title)
-
-        # ChatHistoryにも履歴を保存（DBでの永続化）
-        chat_history_entry = ChatHistory(
-            thread_id=thread_id,
-            user_id=current_user.id,
-            title=title,
-            user_message=user_message,
-            assistant_message=assistant_response,
-            created_at=datetime.now(timezone.utc)
-        )
-        db.session.add(chat_history_entry)
-        db.session.commit()
+        save_chat_history(thread_id, current_user.id, user_message, assistant_response, title=title)
 
         source_details = source_info
 

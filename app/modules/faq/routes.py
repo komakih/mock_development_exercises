@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify, render_template, abort, flash, se
 from flask_login import login_required, current_user
 from app.modules.faq.faq_query import find_similar_questions
 from app.modules.history.history_query import save_chat_history
+from app.models import db, ChatHistory
 
 faq_bp = Blueprint('faq', __name__, template_folder='templates')
 
@@ -28,7 +29,9 @@ def faq_help():
         session['faq_messages'].append({'role': 'assistant', 'content': assistant_message})
         session.modified = True
 
-        save_chat_history(user_input, assistant_message)
+        # FAQ用に固定のthread_id（例: 0）を使用する
+        faq_thread_id = 0
+        save_chat_history(faq_thread_id, current_user.id, user_input, assistant_message)
 
         return jsonify({"answer": assistant_message}), 200
 
@@ -37,6 +40,24 @@ def faq_help():
 @faq_bp.route('/faq-reset', methods=['POST'])
 @login_required
 def reset_faq_chat():
-    session.pop('faq_messages', None)
-    flash('チャット履歴をリセットしました。', 'info')
-    return jsonify({'status': 'success'}), 200
+    faq_thread_id = 0  # FAQ専用のthread_idを指定
+
+    try:
+        # DBから該当のFAQ履歴を削除
+        ChatHistory.query.filter_by(
+            thread_id=faq_thread_id,
+            user_id=current_user.id
+        ).delete()
+
+        db.session.commit()
+
+        # sessionもクリア（オプション）
+        session.pop('faq_messages', None)
+
+        flash('FAQチャット履歴をリセットしました。', 'info')
+        return jsonify({'status': 'success'}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        flash('FAQ履歴のリセットに失敗しました。', 'danger')
+        return jsonify({'status': 'error', 'message': str(e)}), 500

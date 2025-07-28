@@ -9,7 +9,7 @@ chroma_data/
 *.sqlite3
 data/document_collection/
 .DS_Store
-logs/
+logs/*
 *.log
 node_modules/
 *.db

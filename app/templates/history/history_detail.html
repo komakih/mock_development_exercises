@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-
+{% set page_title = "チャット履歴詳細" %}
 {% block content %}
 <div class="container-fluid">
   <div class="row">
@@ -17,9 +17,6 @@
         <div class="history-detail-container border rounded p-4 shadow-sm" style="height:75vh; overflow-y:auto;">
             <div class="container mt-5">
                 <div class="card">
-                    <div class="card-header">
-                        <h2 class="mb-0">チャット履歴詳細</h2>
-                    </div>
                     <div class="card-body">
                         <p><strong>日時:</strong> {{ history.created_at }}</p>
                         <p><strong>ユーザーのメッセージ:</strong> {{ history.user_message }}</p>

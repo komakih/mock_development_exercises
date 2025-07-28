@@ -7,5 +7,5 @@ load_dotenv()
 app = create_app()
 
 if __name__ == '__main__':
-   #ssl_bp(app)
-   app.run(debug=True)
+   ssl_bp(app)
+   #app.run(debug=True)

@@ -1,6 +1,6 @@
 {% set show_flash = false %}
 {% extends "base.html" %}
-
+{% set page_title = "チャット履歴一覧" %}
 {% block content %}
 <div class="container-fluid">
     <div class="row">
@@ -16,7 +16,6 @@
 
             {% if current_user.has_permission('view_history') %}
                 <div class="history-container border rounded p-4 shadow-sm" style="height:75vh; overflow-y:auto;">
-                    <h1>チャット履歴一覧</h1>
                     <ul>
                         {% for history in histories %}
                             <li>

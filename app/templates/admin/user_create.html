@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-
+{% set page_title = "ユーザー作成" %}
 {% block content %}
     <div class="container-fluid">
         <div class="row">
@@ -15,8 +15,6 @@
 
                 <!-- ユーザー作成の内容 -->
                 <div class="user-create-container border rounded p-4 shadow-sm" style="height:75vh; overflow-y:auto;">
-                    <h1>ユーザー作成</h1>
-
                     <form method="POST">
                         {{ form.hidden_tag() }}
                         <p>{{ form.username.label }}<br>{{ form.username(size=32) }}</p>

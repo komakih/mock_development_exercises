@@ -9,6 +9,7 @@ openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 def get_chatgpt_response(user_id, messages, use_rag_search=True):
     start_time = time.time()
     last_message = messages[-1]['content']
+    from app.modules.rag.rag_utils import perform_vector_search
 
     if use_rag_search:
         rag_response, source_info = perform_vector_search(user_id, last_message)

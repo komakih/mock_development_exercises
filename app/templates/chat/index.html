@@ -27,17 +27,10 @@
 
       <!-- Chat Messages -->
       <div class="chat-container border rounded p-4 shadow-sm" style="height:75vh; overflow-y:auto;" id="chat-container">
-        {% if session['messages'] %}
-          {% for msg in session['messages'] %}
-            <div class="alert {% if msg.role == 'user' %}alert-primary text-end ms-auto{% else %}alert-secondary text-start me-auto{% endif %}" 
-                style="
-                  max-width:{% if msg.role == 'user' %}60%{% else %}70%{% endif %};
-                  width: fit-content;
-                  word-wrap: break-word;
-                  overflow-wrap: break-word;
-                  margin-bottom: 10px;
-                  white-space: normal;
-                ">
+        {% if messages %}
+          {% for msg in messages %}
+              <div class="alert {% if msg.role == 'user' %}alert-primary text-end ms-auto{% else %}alert-secondary text-start me-auto{% endif %}" 
+                  style="max-width: {% if msg.role == 'user' %}60%{% else %}70%{% endif %}; width: fit-content; word-wrap: break-word; overflow-wrap: break-word; margin-bottom: 10px; white-space: normal; line-height: 1.5;">
               {% autoescape false %}
                 {{ msg.content.strip().replace('\n', '<br>') }}
               {% endautoescape %}

@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>ログイン</h1>
+    <h2>ログイン</h2>
     <form method="POST">
         {{ form.hidden_tag() }}
         <p>{{ form.email.label }}<br>{{ form.email(size=32) }}</p>

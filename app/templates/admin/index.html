@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1>管理者ページ</h1>
+    <h2>管理者ページ</h2>
 
     {% if current_user.has_permission('create_user') %}
         <a href="{{ url_for('admin.create_user') }}">ユーザー作成</a>

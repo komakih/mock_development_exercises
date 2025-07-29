@@ -1,22 +1,39 @@
 {% extends "base.html" %}
+{% set page_title = "Slack Webhook設定" %}
 
 {% block content %}
-<div class="container mt-4">
-    <h2>Slack Webhook設定</h2>
-    <form method="POST">
-        {{ form.hidden_tag() }}
-        <div class="form-group">
-            {{ form.webhook_url.label(class="form-label") }}
-            {{ form.webhook_url(class="form-control", placeholder="SlackのWebhook URLを入力してください") }}
-            {% if form.webhook_url.errors %}
-                <div class="text-danger">
-                    {% for error in form.webhook_url.errors %}
-                        {{ error }}
-                    {% endfor %}
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-2 bg-light sidebar py-4">
+                {% include 'layout/sidebar.html' %}
+            </div>
+
+            <!-- Main Slack Webhook Area -->
+            <div class="col-md-10">
+                <!-- Navbar -->
+                {% include 'layout/navbar.html' %}
+
+                <!-- Slack Webhook設定フォームの内容 -->
+                <div class="webhook-config-container border rounded p-4 shadow-sm" style="height:75vh; overflow-y:auto;">
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+                        <div class="mb-3">
+                            {{ form.webhook_url.label(class="form-label") }}
+                            {{ form.webhook_url(class="form-control", placeholder="SlackのWebhook URLを入力してください") }}
+                            {% if form.webhook_url.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.webhook_url.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <button type="submit" class="btn btn-primary">{{ form.submit.label }}</button>
+                    </form>
                 </div>
-            {% endif %}
+
+            </div>
         </div>
-        <button type="submit" class="btn btn-primary mt-3">{{ form.submit.label }}</button>
-    </form>
-</div>
+    </div>
 {% endblock %}

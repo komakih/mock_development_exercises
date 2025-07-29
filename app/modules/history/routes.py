@@ -53,7 +53,8 @@ def history_delete(history_id):
         operator_id=current_user.id,
         action="履歴削除",
         resource_id=history_id,
-        details=f"ユーザー{current_user.email}が履歴{history_id}を削除しました。"
+        details=f"ユーザー{current_user.email}が履歴{history_id}を削除しました。",
+        notify_slack=True
     )
 
     flash('履歴を削除しました。', 'success')

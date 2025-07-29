@@ -7,7 +7,7 @@ from pytz import timezone as pytz_timezone
 # セキュリティ監査ロガーの設定（security_audit専用）
 security_logger = logging.getLogger('security_audit')
 slack_handler = SlackLogHandler()
-slack_handler.setLevel(logging.INFO)
+slack_handler.setLevel(logging.WARNING)
 slack_handler.setFormatter(logging.Formatter('%(asctime)s | %(levelname)s | %(name)s | %(message)s'))
 security_logger.addHandler(slack_handler)
 
@@ -26,7 +26,7 @@ if not logger.handlers:
 
 jst = pytz_timezone('Asia/Tokyo')
 
-def log_security_event(operator_id, action, resource_id, details=None):
+def log_security_event(operator_id, action, resource_id, details=None, notify_slack=False):
     log_data = {
         "timestamp": datetime.now(jst).isoformat(),
         "operator_id": int(operator_id),
@@ -35,13 +35,14 @@ def log_security_event(operator_id, action, resource_id, details=None):
         "details": details if details else ""
     }
     logger.info(json.dumps(log_data, ensure_ascii=False))
-    try:
-        text = (
-            f"✅ セキュリティログ: {action}\n"
-            f"📌 実行者: user_id={operator_id}\n"
-            f"🔗 対象ID: {resource_id}\n"
-            f"📝 詳細: {details}"
-        )
-        send_slack_message(text)
-    except Exception as e:
-        print("Slack通知失敗:", e)
+    if notify_slack:
+        try:
+            text = (
+                f"✅ セキュリティログ: {action}\n"
+                f"📌 実行者: user_id={operator_id}\n"
+                f"🔗 対象ID: {resource_id}\n"
+                f"📝 詳細: {details}"
+            )
+            send_slack_message(text)
+        except Exception as e:
+            print("Slack通知失敗:", e)

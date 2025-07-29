@@ -1,6 +1,7 @@
 import logging
 import json
 from datetime import datetime
+from pytz import timezone as pytz_timezone
 
 # ログ設定
 logging.basicConfig(
@@ -9,9 +10,11 @@ logging.basicConfig(
     format='%(message)s'
 )
 
+jst = pytz_timezone('Asia/Tokyo')
+
 def log_login_attempt(user_id, email, success, ip_address, user_agent):
     log_data = {
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(jst).isoformat(),
         "user_id": user_id,
         "email": email,
         "success": success,

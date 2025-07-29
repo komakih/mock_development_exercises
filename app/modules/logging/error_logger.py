@@ -1,5 +1,6 @@
 import logging, json, os, traceback
-from datetime import datetime
+from datetime import datetime, timezone
+from pytz import timezone as pytz_timezone
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 log_dir = os.path.abspath(os.path.join(basedir, '../../../logs'))
@@ -15,8 +16,9 @@ if not logger.handlers:
     logger.addHandler(file_handler)
 
 def log_error(e):
+    jst = pytz_timezone('Asia/Tokyo')
     log_data = {
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(jst).isoformat(),
         "error_type": type(e).__name__,
         "message": str(e),
         "stack_trace": traceback.format_exc()

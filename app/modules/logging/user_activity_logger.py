@@ -2,6 +2,7 @@ import logging
 import json
 import os
 from datetime import datetime
+from pytz import timezone as pytz_timezone
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 log_dir = os.path.abspath(os.path.join(basedir, '../../../logs'))
@@ -17,8 +18,9 @@ if not logger.handlers:
     logger.addHandler(file_handler)
 
 def log_user_activity(user_id, action, details=None):
+    jst = pytz_timezone('Asia/Tokyo')
     log_data = {
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(jst).isoformat(),
         "user_id": int(user_id),
         "action": str(action),
         "details": details if details else ""

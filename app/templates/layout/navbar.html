@@ -17,6 +17,12 @@
             {% if current_user.has_permission('create_user') %}
             <li><a class="dropdown-item" href="{{ url_for('admin.create_user') }}">ユーザー作成</a></li>
             {% endif %}
+            {% if current_user.has_permission('slack_ignite') %}
+            <li><a class="dropdown-item" href="{{ url_for('admin.slack_webhook') }}">Slack Webhook設定</a></li>
+            {% endif %}
+            {% if current_user.has_permission('log_list') %}
+            <li><a class="dropdown-item" href="{{ url_for('admin.logs') }}">ログ管理</a></li>
+            {% endif %}
           </ul>
         </li>
         {% endif %}

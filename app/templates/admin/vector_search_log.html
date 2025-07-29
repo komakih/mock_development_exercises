@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% set page_title = "ベクトル検索失敗ログ" %}
+
+{% block content %}
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-2 bg-light sidebar py-4">
+                {% include 'layout/sidebar.html' %}
+            </div>
+
+            <!-- Main Vector Search Log Area -->
+            <div class="col-md-10">
+                <!-- Navbar -->
+                {% include 'layout/navbar.html' %}
+
+                <!-- ベクトル検索失敗ログの内容 -->
+                <div class="log-vector-container border rounded p-4 shadow-sm" style="height:75vh; overflow-y:auto;">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>日時</th>
+                                <th>詳細</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in logs %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td>{{ log.timestamp }}</td>
+                                <td>クエリ: {{ log.query }}<br>理由: {{ log.reason }}</td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="3">ログがありません。</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+    </div>
+{% endblock %}

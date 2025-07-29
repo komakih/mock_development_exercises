@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, SelectMultipleField, widgets
 from wtforms.widgets import CheckboxInput
-from wtforms.validators import DataRequired, Email, Length
+from wtforms.validators import DataRequired, Email, Length, URL
 from markupsafe import Markup
 
 class CreateUserForm(FlaskForm):
@@ -33,3 +33,13 @@ class EditUserForm(FlaskForm):
         widget=BootstrapCheckboxGroupWidget()
     )
     submit = SubmitField('更新')
+
+class SlackWebhookForm(FlaskForm):
+    webhook_url = StringField(
+        'Slack Webhook URL',
+        validators=[
+            DataRequired(message='Webhook URLを入力してください。'),
+            URL(message='有効なURLを入力してください。')
+        ]
+    )
+    submit = SubmitField('設定を保存')

@@ -7,7 +7,8 @@ app = create_app()
 roles_permissions = {
     'Admin': [
         'user_list', 'create_user', 'edit_user', 'delete_user',
-        'index_ignite',
+        'index_ignite', "slack_ignite", 'log_list',
+        'view_vector', 'view_llmrequest',
         'view_chat', 'post_chat', 'edit_chat', 'delete_chat',
         'view_history', 'edit_history', 'delete_history',
         'view_document', 'edit_document', 'delete_document'
@@ -36,6 +37,10 @@ permissions_desc = {
     'edit_user': 'ユーザー情報編集',
     'delete_user': 'ユーザー削除',
     'index_ignite': 'インデックス更新',
+    'slack_ignite': 'Slackwebhook更新',
+    'log_list': 'ログ管理',
+    'view_vector': 'ベクトル検索失敗',
+    'view_llmrequest': 'LLMAPIリクエスト',
     'view_chat': 'チャット閲覧',
     'post_chat': 'チャット投稿',
     'edit_chat': 'チャット編集',

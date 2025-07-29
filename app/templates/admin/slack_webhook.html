@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Slack Webhook設定</h2>
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            {{ form.webhook_url.label(class="form-label") }}
+            {{ form.webhook_url(class="form-control", placeholder="SlackのWebhook URLを入力してください") }}
+            {% if form.webhook_url.errors %}
+                <div class="text-danger">
+                    {% for error in form.webhook_url.errors %}
+                        {{ error }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        <button type="submit" class="btn btn-primary mt-3">{{ form.submit.label }}</button>
+    </form>
+</div>
+{% endblock %}

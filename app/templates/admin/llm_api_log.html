@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>LLM APIリクエストログ</h2>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>日時</th>
+                <th>詳細</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in logs %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ log.timestamp }}</td>
+                <td>
+                  ユーザーID: {{ log.user_id }}<br>
+                  入力: {{ log.prompt }}<br>
+                  応答: {{ log.response }}
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="3">ログがありません。</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

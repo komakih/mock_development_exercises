@@ -1,10 +1,12 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash, abort
 from flask_login import login_required, current_user
-from app.models import User, db, Role
+from app.models import User, db, Role, AppConfig
 from app.modules.auth.auth import require_permission
 from app.modules.admin.forms import CreateUserForm, EditUserForm
 from app.modules.logging.security_audit_logger import log_security_event
 from app.database import db
+from app.modules.logging.log_manager import LogManager
+from app.modules.admin.forms import SlackWebhookForm
 
 import logging
 from app.modules.utils.slack_log_handler import SlackLogHandler
@@ -129,3 +131,41 @@ def create_user():
         return redirect(url_for('admin.user_list'))
 
     return render_template('admin/user_create.html', form=form)
+
+# Slack Webhook設定ページの追加
+@admin_bp.route('/slack_webhook', methods=['GET', 'POST'])
+@login_required
+def slack_webhook():
+    form = SlackWebhookForm()
+
+    if request.method == 'GET':
+        webhook_url = AppConfig.get_config('SLACK_WEBHOOK_URL')
+        if webhook_url:
+            form.webhook_url.data = webhook_url
+
+    if form.validate_on_submit():
+        AppConfig.set_config('SLACK_WEBHOOK_URL', form.webhook_url.data)
+        flash('Slack Webhook URLを更新しました。', 'success')
+        return redirect(url_for('admin.slack_webhook'))
+
+    return render_template('admin/slack_webhook.html', form=form)
+
+# ログ参照ページ（メニュー）
+@admin_bp.route('/logs')
+@login_required
+def logs():
+    return render_template('admin/log_list.html')
+
+# ベクトル検索失敗ログ表示
+@admin_bp.route('/logs/vector_search')
+@login_required
+def vector_search_logs():
+    logs = LogManager.get_logs('vector_search')
+    return render_template('admin/vector_search_log.html', logs=logs)
+
+# LLM APIリクエストログ表示
+@admin_bp.route('/logs/llm_api')
+@login_required
+def llm_api_logs():
+    logs = LogManager.get_logs('llm_api_request')
+    return render_template('admin/llm_api_log.html', logs=logs)

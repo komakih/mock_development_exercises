@@ -30,7 +30,8 @@ def index():
                 operator_id=current_user.id,
                 action="インデックス更新",
                 resource_id="index",  # インデックス自体を示す識別子
-                details=f"インデックスを更新しました。文書数: {result['document_count']}、所要時間: {result['time']:.2f}秒"
+                details=f"インデックスを更新しました。文書数: {result['document_count']}、所要時間: {result['time']:.2f}秒",
+                notify_slack=True
             )
             flash(f"インデックス更新成功！文書数: {result['document_count']}（所要時間: {result['time']:.2f}秒）", "success")
         else:
@@ -39,7 +40,8 @@ def index():
                 operator_id=current_user.id,
                 action="インデックス更新失敗",
                 resource_id="index",
-                details=f"インデックス更新に失敗しました: {result['error']}"
+                details=f"インデックス更新に失敗しました: {result['error']}",
+                notify_slack=True
             )
             flash(f"インデックス更新失敗: {result['error']}", "error")
         return redirect(url_for('index_update.index'))

@@ -1,5 +1,6 @@
 import logging, json, os
-from datetime import datetime, timezone
+from datetime import datetime
+from pytz import timezone as pytz_timezone
 
 # プロジェクトのルートディレクトリを取得
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -25,9 +26,11 @@ if not logger.handlers:
     file_handler.setFormatter(logging.Formatter('%(message)s'))
     logger.addHandler(file_handler)
 
+jst = pytz_timezone('Asia/Tokyo')
+
 def log_no_result_search(user_id, query):
     log_data = {
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(jst).isoformat(),
         "user_id": user_id,
         "query": query,
         "result": "no_match"
@@ -36,7 +39,7 @@ def log_no_result_search(user_id, query):
 
 def log_search_result(user_id, query, result, similarity, matched):
     log_data = {
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "timestamp": datetime.now(jst).isoformat(),
         "user_id": int(user_id),
         "query": str(query),
         "result": str(result),

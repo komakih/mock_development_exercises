@@ -12,7 +12,7 @@ from app.modules.utils.slack_log_handler import SlackLogHandler
 # セキュリティ監査ロガーの設定（security_audit専用）
 security_logger = logging.getLogger('security_audit')
 slack_handler = SlackLogHandler()
-slack_handler.setLevel(logging.INFO)
+slack_handler.setLevel(logging.WARNING)
 slack_handler.setFormatter(logging.Formatter('%(asctime)s | %(levelname)s | %(name)s | %(message)s'))
 security_logger.addHandler(slack_handler)
 
@@ -98,7 +98,8 @@ def register():
             operator_id=new_user.id,
             action="ユーザーアカウント作成",
             resource_id=new_user.id,
-            details=f"ユーザー{new_user.email}のアカウントが作成されました。"
+            details=f"ユーザー{new_user.email}のアカウントが作成されました。",
+            notify_slack=True
         )
 
         flash('アカウント登録に成功しました。ログインしてください。', 'success')

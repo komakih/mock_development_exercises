@@ -61,7 +61,8 @@ def edit_user(user_id):
             operator_id=current_user.id,
             action="ユーザー情報更新",
             resource_id=user.id,
-            details=f"ユーザー{user.email}の情報が更新されました。"
+            details=f"ユーザー{user.email}の情報が更新されました。",
+            notify_slack=True
         )
 
         flash('ユーザー情報を更新しました。', 'success')
@@ -86,7 +87,8 @@ def delete_user(user_id):
         operator_id=current_user.id,
         action="ユーザー削除",
         resource_id=user_id,
-        details=f"ユーザー{user_email}を削除しました。"
+        details=f"ユーザー{user_email}を削除しました。",
+        notify_slack=True
     )
 
     flash('ユーザーを削除しました。', 'success')
@@ -119,7 +121,8 @@ def create_user():
             operator_id=current_user.id,
             action="ユーザーアカウント作成",
             resource_id=new_user.id,
-            details=f"ユーザー{new_user.email}のアカウントを作成しました。"
+            details=f"ユーザー{new_user.email}のアカウントを作成しました。",
+            notify_slack=True
         )
 
         flash('新しいユーザーを作成しました。', 'success')

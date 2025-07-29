@@ -3,6 +3,10 @@ from flask_login import UserMixin
 from datetime import datetime, timezone
 from app.database import db
 from werkzeug.security import generate_password_hash, check_password_hash
+from pytz import timezone as pytz_timezone
+
+def get_japan_time():
+    return datetime.now(pytz_timezone('Asia/Tokyo'))
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -30,7 +34,7 @@ class Prompt(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     title = db.Column(db.String(128), nullable=False)
     content = db.Column(db.Text, nullable=False)
-    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at = db.Column(db.DateTime, default=get_japan_time)
 
     def __repr__(self):
         return f'<Prompt {self.title}>'
@@ -42,7 +46,7 @@ class ChatHistory(db.Model):
     title = db.Column(db.String(128))
     user_message = db.Column(db.Text, nullable=False)          # ← 追加
     assistant_message = db.Column(db.Text, nullable=False)     # ← 追加
-    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))  # 作成日時を明確化
+    created_at = db.Column(db.DateTime, default=get_japan_time)  # 日本時間で保存
 
     messages = db.relationship(
         'ChatMessage',
@@ -59,7 +63,7 @@ class ChatMessage(db.Model):
     history_id = db.Column(db.Integer, db.ForeignKey('chat_history.id'), nullable=False)
     sender = db.Column(db.String(20), nullable=False)  # 'user' or 'bot'
     message = db.Column(db.Text, nullable=False)
-    timestamp = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    timestamp = db.Column(db.DateTime, default=get_japan_time)  # 日本時間で保存
 
     def __repr__(self):
         return f'<ChatMessage {self.sender}: {self.message[:20]}...>'

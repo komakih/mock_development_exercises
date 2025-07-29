@@ -3,8 +3,7 @@ from flask_login import login_required, current_user
 from app.openai_utils import get_chatgpt_response, generate_thread_title
 from app.modules.history.history_query import save_chat_history
 from app.modules.rag.rag_utils import perform_vector_search
-from app.modules.logging.vector_search_logger import log_no_result_search
-from app.modules.logging.user_activity_logger import log_user_activity  # ←追加
+from app.modules.logging.user_activity_logger import log_user_activity
 import uuid
 from app.models import db, ChatHistory
 
@@ -28,57 +27,49 @@ def index():
 
         if not user_message:
             flash('質問を入力してください。', 'warning')
-            return render_template('chat/index.html')
+            return redirect(url_for('chat.index'))
 
-        # LLMまたはRAG検索で回答を取得
         assistant_response, source_info = perform_vector_search(current_user.id, user_message)
-        
         if assistant_response is None:
             assistant_response, _ = get_chatgpt_response(current_user.id, [{"role": "user", "content": user_message}])
 
-        # スレッドタイトルを生成（任意）
         title = generate_thread_title(current_user.id, user_message)
 
-        # ユーザー行動ログを記録（質問送信）【再追加】
         log_user_activity(current_user.id, action="質問送信", details=user_message)
-
-        # チャット履歴をデータベースに保存（save_chat_history を再追加）
         save_chat_history(thread_id, current_user.id, user_message, assistant_response, title=title)
 
         source_details = source_info
 
         return redirect(url_for('chat.index'))
 
-    # DBから履歴を読み込み
-    history_entries = ChatHistory.query.filter_by(thread_id=thread_id, user_id=current_user.id).order_by(ChatHistory.created_at.asc()).all()
+    # GET処理の履歴表示
+    history_entries = ChatHistory.query.filter_by(thread_id=thread_id, user_id=current_user.id)\
+        .order_by(ChatHistory.created_at.asc()).all()
 
     messages = []
     for entry in history_entries:
         messages.append({"role": "user", "content": entry.user_message})
         messages.append({"role": "assistant", "content": entry.assistant_message})
 
+    form_message = ""  # ←ここを明示的に空に再設定（必須）
+
     return render_template(
         'chat/index.html',
         messages=messages,
-        source_details=source_details
+        source_details=source_details,
+        form_message=form_message
     )
 
 @chat_bp.route('/reset', methods=['POST'])
 @login_required
 def reset_chat():
-    # セッションからスレッドIDを取得し、削除
     thread_id = session.pop('thread_id', None)
 
     if thread_id:
-        # DBから該当スレッドの履歴を全て削除
         ChatHistory.query.filter_by(thread_id=thread_id, user_id=current_user.id).delete()
         db.session.commit()
 
-    # 新しいスレッドIDを再生成（必要に応じて）
     session['thread_id'] = str(uuid.uuid4())
-
-    # ユーザー行動ログを記録（チャット履歴リセット）
     log_user_activity(current_user.id, action="チャット履歴リセット")
 
     return redirect(url_for('chat.index'))
-

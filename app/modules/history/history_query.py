@@ -19,18 +19,22 @@ def get_chat_history_detail(history_id):
 
 def save_chat_history(thread_id, user_id, user_message, assistant_message, title=None):
     jst = pytz_timezone('Asia/Tokyo')
-    history_entry = ChatHistory(
-        thread_id=thread_id,
-        user_id=user_id,
-        title=title if title else user_message[:20],
-        user_message=user_message,
-        assistant_message=assistant_message,
-        created_at=datetime.now(jst)
-    )
-    db.session.add(history_entry)
-    db.session.commit()
-    # 履歴保存時のログ記録を追加
-    log_user_activity(current_user.id, action="履歴保存", details=f"タイトル: {history_entry.title}")
+    try:
+        history_entry = ChatHistory(
+            thread_id=thread_id,
+            user_id=user_id,
+            title=title if title else user_message[:20],
+            user_message=user_message,
+            assistant_message=assistant_message,
+            created_at=datetime.now(jst)
+        )
+        db.session.add(history_entry)
+        db.session.commit()
+        log_user_activity(user_id, action="履歴保存", details=f"タイトル: {history_entry.title}")
+    except Exception as e:
+        db.session.rollback()
+        # エラーを別途ログに記録
+        log_user_activity(user_id, action="履歴保存失敗", details=str(e))
 
 def delete_chat_history(history_id):
     history = ChatHistory.query.get(history_id)

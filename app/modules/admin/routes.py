@@ -161,7 +161,14 @@ def logs():
 @login_required
 def vector_search_logs():
     logs = LogManager.get_logs('vector_search')
-    return render_template('admin/vector_search_log.html', logs=logs)
+
+    # 特定のクエリを含むログを除外
+    filtered_logs = [
+        log for log in logs
+        if "以下のログを運用チーム向けに簡潔に要約してください" not in log.get('query', '')
+    ]
+
+    return render_template('admin/vector_search_log.html', logs=filtered_logs)
 
 # LLM APIリクエストログ表示
 @admin_bp.route('/logs/llm_api')

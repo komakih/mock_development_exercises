@@ -79,12 +79,6 @@ def index():
 @chat_bp.route('/reset', methods=['POST'])
 @login_required
 def reset_chat():
-    thread_id = session.pop('thread_id', None)
-
-    if thread_id:
-        ChatHistory.query.filter_by(thread_id=thread_id, user_id=current_user.id).delete()
-        db.session.commit()
-
     session['thread_id'] = str(uuid.uuid4())
     log_user_activity(current_user.id, action="チャット履歴リセット")
 

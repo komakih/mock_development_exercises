@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% set page_title = "ユーザーアクティビティログ" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-2 bg-light sidebar py-4">
+            {% include 'layout/sidebar.html' %}
+        </div>
+
+        <!-- Main Log Area -->
+        <div class="col-md-10">
+            <!-- Navbar -->
+            {% include 'layout/navbar.html' %}
+
+            <!-- ユーザーアクティビティログの内容 -->
+            <div class="log-activity-container border rounded p-4 shadow-sm" style="height:75vh; overflow-y:auto;">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>日時</th>
+                            <th>ユーザーID</th>
+                            <th>アクション</th>
+                            <th>詳細</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in logs %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>{{ log.timestamp }}</td>
+                            <td>{{ log.user_id }}</td>
+                            <td>{{ log.action }}</td>
+                            <td>{{ log.details or "-" }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center">ログがありません。</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

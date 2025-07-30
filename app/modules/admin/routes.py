@@ -8,7 +8,7 @@ from app.database import db
 from app.modules.logging.log_manager import LogManager
 from app.modules.admin.forms import SlackWebhookForm
 
-import logging
+import logging, json
 from app.modules.utils.slack_log_handler import SlackLogHandler
 
 # セキュリティ監査ロガーの設定（security_audit専用）
@@ -154,12 +154,20 @@ def slack_webhook():
 @admin_bp.route('/logs')
 @login_required
 def logs():
+    if not current_user.has_permission('log_list'):
+        flash('ログ参照権限がありません。', 'warning')
+        abort(403)
+
     return render_template('admin/log_list.html')
 
 # ベクトル検索失敗ログ表示
 @admin_bp.route('/logs/vector_search')
 @login_required
 def vector_search_logs():
+    if not current_user.has_permission('view_vector'):
+        flash('ベクトル検索失敗ログを参照する権限がありません。', 'warning')
+        abort(403)
+
     logs = LogManager.get_logs('vector_search')
 
     # 特定のクエリを含むログを除外
@@ -174,5 +182,26 @@ def vector_search_logs():
 @admin_bp.route('/logs/llm_api')
 @login_required
 def llm_api_logs():
+    if not current_user.has_permission('view_llmrequest'):
+        flash('LLM APIリクエストログを参照する権限がありません。', 'warning')
+        abort(403)
+
+    logs = LogManager.get_logs('llm_api_request')
+    return render_template('admin/llm_api_log.html', logs=logs)
+
+@admin_bp.route('/logs/user_activity')
+@login_required
+def user_activity_logs():
+    log_file_path = "logs/user_activity.log"
+    logs = []
+    with open(log_file_path, "r", encoding="utf-8") as file:
+        for line in file:
+            logs.append(json.loads(line.strip()))
+
+    # 日時で降順ソート（新しい順）
+    logs = sorted(logs, key=lambda x: x["timestamp"], reverse=True)
+
+    return render_template('admin/user_activity_log.html', logs=logs)
+
     logs = LogManager.get_logs('llm_api_request')
     return render_template('admin/llm_api_log.html', logs=logs)

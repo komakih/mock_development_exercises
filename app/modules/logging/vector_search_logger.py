@@ -35,7 +35,7 @@ def log_no_result_search(user_id, query):
         "query": query,
         "result": "no_match"
     }
-    logging.info(json.dumps(log_data))
+    logging.info(json.dumps(log_data, ensure_ascii=False))
 
 def log_search_result(user_id, query, result, similarity, matched):
     log_data = {

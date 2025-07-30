@@ -3,6 +3,7 @@ from flask_login import login_required, current_user
 from app.modules.faq.faq_query import find_similar_questions
 from app.modules.history.history_query import save_chat_history
 from app.models import db, ChatHistory
+from app.modules.faq.faq_rag import faq_rag
 
 faq_bp = Blueprint('faq', __name__, template_folder='templates')
 
@@ -61,3 +62,25 @@ def reset_faq_chat():
         db.session.rollback()
         flash('FAQ履歴のリセットに失敗しました。', 'danger')
         return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@faq_bp.route('/faq-rag', methods=['GET', 'POST'])
+@login_required
+def faq_rag_route():
+    if 'faq_rag_messages' not in session:
+        session['faq_rag_messages'] = []
+
+    if request.method == 'POST':
+        user_input = request.json.get('message', '')
+        assistant_message = faq_rag.search(user_input)
+
+        session['faq_rag_messages'].append({'role': 'user', 'content': user_input})
+        session['faq_rag_messages'].append({'role': 'assistant', 'content': assistant_message})
+        session.modified = True
+
+        # 既存とは別のスレッドIDを設定して、履歴を区別可能
+        faq_rag_thread_id = 99  
+        save_chat_history(faq_rag_thread_id, current_user.id, user_input, assistant_message)
+
+        return jsonify({"answer": assistant_message}), 200
+
+    return render_template('faq/faq_chat.html', messages=session['faq_rag_messages'])

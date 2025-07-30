@@ -41,18 +41,7 @@ def faq_help():
 @faq_bp.route('/faq-reset', methods=['POST'])
 @login_required
 def reset_faq_chat():
-    faq_thread_id = 0  # FAQ専用のthread_idを指定
-
     try:
-        # DBから該当のFAQ履歴を削除
-        ChatHistory.query.filter_by(
-            thread_id=faq_thread_id,
-            user_id=current_user.id
-        ).delete()
-
-        db.session.commit()
-
-        # sessionもクリア（オプション）
         session.pop('faq_messages', None)
 
         flash('FAQチャット履歴をリセットしました。', 'info')
